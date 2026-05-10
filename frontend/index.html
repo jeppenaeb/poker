@@ -181,6 +181,20 @@
             <div class="hole-card-row" id="holeCards"></div>
           </div>
           <div class="rule-grid" id="gameRules"></div>
+          <div class="action-panel" id="actionPanel" hidden>
+            <div class="action-row">
+              <button class="danger-action" type="button" data-action="fold">Fold</button>
+              <button class="secondary-action" type="button" data-action="check">Check</button>
+              <button class="secondary-action" type="button" data-action="call">Call</button>
+              <button class="primary-action" type="button" data-action="raise">Raise</button>
+              <button class="warning-action" type="button" data-action="all_in">All-in</button>
+            </div>
+            <label>
+              Raise til
+              <input id="raiseAmount" type="number" min="20" step="10" value="40" />
+            </label>
+            <p class="message" id="actionMessage"></p>
+          </div>
         </section>
       </section>
     </main>
