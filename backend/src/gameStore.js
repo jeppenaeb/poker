@@ -1,6 +1,6 @@
 const crypto = require("crypto");
 const { generateGameCode, normalizeGameCode } = require("./gameCode");
-const { createFirstHand } = require("./pokerEngine");
+const { applyPlayerAction, createFirstHand } = require("./pokerEngine");
 
 const games = new Map();
 
@@ -154,11 +154,20 @@ function updateSeats({ code, playerId, tableSeats }) {
   return game;
 }
 
+function playerAction({ code, playerId, action, amount }) {
+  const game = getGame(code);
+
+  if (!game) throw new Error("GAME_NOT_FOUND");
+
+  return applyPlayerAction(game, { playerId, action, amount });
+}
+
 module.exports = {
   createGame,
   joinGame,
   getGame,
   getGameForPlayer,
+  playerAction,
   startGame,
   updateSeats
 };
