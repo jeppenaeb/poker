@@ -298,6 +298,14 @@ select {
   border-style: dashed;
 }
 
+.seat[draggable="true"] {
+  cursor: grab;
+}
+
+.seat[draggable="true"]:active {
+  cursor: grabbing;
+}
+
 .seat strong {
   font-size: 14px;
 }
