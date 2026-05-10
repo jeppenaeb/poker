@@ -107,9 +107,40 @@ function startGame({ code, playerId }) {
   return game;
 }
 
+function updateSeats({ code, playerId, tableSeats }) {
+  const game = getGame(code);
+
+  if (!game) throw new Error("GAME_NOT_FOUND");
+  if (game.status !== "lobby") throw new Error("GAME_ALREADY_STARTED");
+
+  const player = game.players.find((item) => item.id === playerId);
+  if (!player || !player.isHost) throw new Error("ONLY_HOST_CAN_UPDATE_SEATS");
+
+  if (!Array.isArray(tableSeats)) throw new Error("INVALID_SEATS");
+  if (tableSeats.length !== game.maxPlayers) throw new Error("INVALID_SEAT_COUNT");
+
+  const joinedPlayerIds = new Set(game.players.map((item) => item.id));
+  const usedPlayerIds = new Set();
+
+  tableSeats.forEach((seatPlayerId) => {
+    if (!seatPlayerId) return;
+    if (!joinedPlayerIds.has(seatPlayerId)) throw new Error("UNKNOWN_PLAYER_IN_SEAT");
+    if (usedPlayerIds.has(seatPlayerId)) throw new Error("DUPLICATE_PLAYER_IN_SEATS");
+    usedPlayerIds.add(seatPlayerId);
+  });
+
+  game.players.forEach((joinedPlayer) => {
+    if (!usedPlayerIds.has(joinedPlayer.id)) throw new Error("MISSING_PLAYER_IN_SEATS");
+  });
+
+  game.tableSeats = tableSeats;
+  return game;
+}
+
 module.exports = {
   createGame,
   joinGame,
   getGame,
-  startGame
+  startGame,
+  updateSeats
 };
