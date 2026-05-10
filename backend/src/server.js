@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-const { createGame, joinGame, getGame } = require("./gameStore");
+const { createGame, joinGame, getGame, startGame } = require("./gameStore");
 const { normalizeGameCode } = require("./gameCode");
 
 const app = express();
@@ -73,6 +73,22 @@ app.post(`${API_BASE}/games/:code/join`, (req, res) => {
     });
 
     res.json(result);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.post(`${API_BASE}/games/:code/start`, (req, res) => {
+  try {
+    const code = normalizeGameCode(req.params.code);
+    const { playerId } = req.body;
+
+    if (!playerId) {
+      return res.status(400).json({ error: "MISSING_PLAYER_ID" });
+    }
+
+    const game = startGame({ code, playerId });
+    res.json({ game });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
