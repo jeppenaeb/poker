@@ -15,7 +15,7 @@ const joinForm = document.getElementById("joinForm");
 function showView(id) {
   views.forEach((view) => view.classList.toggle("is-active", view.id === id));
 
-  if (id !== "lobbyView" && lobbyTimer) {
+  if (!["lobbyView", "gameView"].includes(id) && lobbyTimer) {
     clearInterval(lobbyTimer);
     lobbyTimer = null;
   }
@@ -297,6 +297,7 @@ function renderCards(cards) {
 function renderGame(game) {
   const hand = game.hand;
   const currentPlayer = game.players.find((player) => player.id === currentPlayerId);
+  const winner = game.players.find((player) => player.id === hand.winnerPlayerId);
 
   document.getElementById("gameTitle").textContent = game.gameName;
   document.getElementById("gameCode").textContent = game.code;
@@ -306,7 +307,9 @@ function renderGame(game) {
 
   const actor = game.players.find((player) => player.id === hand.currentPlayerId);
   document.getElementById("gameStatus").textContent =
-    actor && actor.id === currentPlayerId
+    winner
+      ? `${winner.name} vinder haanden.`
+      : actor && actor.id === currentPlayerId
       ? "Det er din tur."
       : `Venter paa ${actor ? actor.name : "naeste spiller"}.`;
 
@@ -346,7 +349,64 @@ function renderGame(game) {
     <div class="rule-box"><span>Dealer</span><strong>${game.players.find((player) => player.id === hand.dealerPlayerId)?.name || "-"}</strong></div>
     <div class="rule-box"><span>Din stack</span><strong>${currentPlayer ? currentPlayer.stack : 0}</strong></div>
   `;
+
+  renderActionPanel(game);
 }
+
+function renderActionPanel(game) {
+  const hand = game.hand;
+  const panel = document.getElementById("actionPanel");
+  const isYourTurn = hand.currentPlayerId === currentPlayerId;
+  const handFinished = ["showdown", "hand_complete"].includes(hand.phase);
+
+  panel.hidden = !isYourTurn || handFinished;
+
+  if (panel.hidden) return;
+
+  const currentBet = Math.max(0, ...Object.values(hand.bets));
+  const playerBet = hand.bets[currentPlayerId] || 0;
+  const callAmount = Math.max(0, currentBet - playerBet);
+  const raiseInput = document.getElementById("raiseAmount");
+  const minimumRaise = Math.max(game.blinds.big, currentBet + game.blinds.big);
+
+  raiseInput.min = minimumRaise;
+  raiseInput.value = Math.max(Number(raiseInput.value || 0), minimumRaise);
+
+  const checkButton = panel.querySelector("[data-action='check']");
+  const callButton = panel.querySelector("[data-action='call']");
+
+  checkButton.disabled = callAmount > 0;
+  callButton.disabled = callAmount === 0;
+  callButton.textContent = callAmount > 0 ? `Call ${callAmount}` : "Call";
+}
+
+async function sendPlayerAction(action) {
+  setMessage("actionMessage", "");
+
+  const body = {
+    playerId: currentPlayerId,
+    action
+  };
+
+  if (action === "raise") {
+    body.amount = Number(document.getElementById("raiseAmount").value);
+  }
+
+  try {
+    const { game } = await api(`/games/${currentGameCode}/action`, {
+      method: "POST",
+      body: JSON.stringify(body)
+    });
+    renderGame(game);
+    showView("gameView");
+  } catch (error) {
+    setMessage("actionMessage", `Handling fejlede: ${error.message}`);
+  }
+}
+
+document.querySelectorAll("[data-action]").forEach((button) => {
+  button.addEventListener("click", () => sendPlayerAction(button.dataset.action));
+});
 
 document.querySelectorAll(".seat").forEach((seat) => {
   seat.addEventListener("dragstart", (event) => {
