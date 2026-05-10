@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const { generateGameCode, normalizeGameCode } = require("./gameCode");
+const { createFirstHand } = require("./pokerEngine");
 
 const games = new Map();
 
@@ -88,6 +89,22 @@ function getGame(code) {
   return games.get(normalizeGameCode(code));
 }
 
+function getGameForPlayer(code, playerId) {
+  const game = getGame(code);
+  if (!game) return null;
+
+  const safeGame = JSON.parse(JSON.stringify(game));
+
+  if (safeGame.hand && safeGame.hand.holeCards) {
+    const ownCards = safeGame.hand.holeCards[playerId] || [];
+    safeGame.hand.holeCards = {
+      [playerId]: ownCards
+    };
+  }
+
+  return safeGame;
+}
+
 function startGame({ code, playerId }) {
   const game = getGame(code);
 
@@ -104,7 +121,7 @@ function startGame({ code, playerId }) {
   game.status = "in_progress";
   game.startedAt = new Date().toISOString();
 
-  return game;
+  return createFirstHand(game);
 }
 
 function updateSeats({ code, playerId, tableSeats }) {
@@ -141,6 +158,7 @@ module.exports = {
   createGame,
   joinGame,
   getGame,
+  getGameForPlayer,
   startGame,
   updateSeats
 };
