@@ -1,0 +1,10 @@
+{
+  "name": "Poker",
+  "short_name": "Poker",
+  "start_url": "/poker/",
+  "scope": "/poker/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#020617",
+  "icons": []
+}
