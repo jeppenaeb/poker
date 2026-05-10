@@ -70,12 +70,22 @@ function renderLobby(game) {
 
   const joined = game.players.length;
   const full = joined === game.maxPlayers;
+  const currentPlayer = game.players.find((player) => player.id === currentPlayerId);
+  const isHost = Boolean(currentPlayer && currentPlayer.isHost);
+  const canStart = full && isHost && game.status === "lobby";
 
-  document.getElementById("lobbyStatus").textContent = full
-    ? `${joined} / ${game.maxPlayers} spillere er klar. Spillet kan startes.`
-    : `${joined} / ${game.maxPlayers} spillere joinet. Lobbyen opdateres automatisk.`;
+  if (game.status !== "lobby") {
+    document.getElementById("lobbyStatus").textContent = "Spillet er startet.";
+  } else if (full && isHost) {
+    document.getElementById("lobbyStatus").textContent = `${joined} / ${game.maxPlayers} spillere er klar. Du kan starte spillet.`;
+  } else if (full) {
+    document.getElementById("lobbyStatus").textContent = `${joined} / ${game.maxPlayers} spillere er klar. Venter paa at host starter spillet.`;
+  } else {
+    document.getElementById("lobbyStatus").textContent = `${joined} / ${game.maxPlayers} spillere joinet. Lobbyen opdateres automatisk.`;
+  }
 
-  document.getElementById("startGameButton").disabled = !full;
+  document.getElementById("startGameButton").disabled = !canStart;
+  document.getElementById("startGameButton").textContent = isHost ? "Start spil" : "Venter paa host";
 
   for (let i = 0; i < 6; i += 1) {
     const seat = document.getElementById(`seat${i}`);
@@ -198,6 +208,18 @@ joinForm.addEventListener("submit", async (event) => {
     enterLobby(game, playerId);
   } catch (error) {
     setMessage("joinMessage", `Kunne ikke joine: ${error.message}`);
+  }
+});
+
+document.getElementById("startGameButton").addEventListener("click", async () => {
+  try {
+    const { game } = await api(`/games/${currentGameCode}/start`, {
+      method: "POST",
+      body: JSON.stringify({ playerId: currentPlayerId })
+    });
+    renderLobby(game);
+  } catch (error) {
+    document.getElementById("lobbyStatus").textContent = `Kunne ikke starte spil: ${error.message}`;
   }
 });
 
