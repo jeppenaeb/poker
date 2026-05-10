@@ -199,6 +199,10 @@ select {
   background: rgba(20, 83, 45, 0.24);
 }
 
+.buyin-options[hidden] {
+  display: none;
+}
+
 .message {
   min-height: 18px;
   margin: 0;
