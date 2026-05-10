@@ -3,6 +3,7 @@ const API_BASE = "/poker/api";
 let currentGameCode = "";
 let currentPlayerId = "";
 let lobbyTimer = null;
+let draggedPlayerId = "";
 
 const views = document.querySelectorAll(".view");
 const buyInsEnabled = document.getElementById("buyInsEnabled");
@@ -97,22 +98,33 @@ function renderLobby(game) {
       seat.className = seat.className.replace(" empty", "");
       seat.innerHTML = "";
       seat.style.display = "none";
+      seat.draggable = false;
+      seat.dataset.playerId = "";
       continue;
     }
 
     seat.style.display = "";
+    seat.draggable = false;
 
     if (!player) {
       seat.classList.add("empty");
+      seat.dataset.playerId = "";
       seat.innerHTML = `<strong>Ledig</strong><span>venter</span>`;
     } else {
       seat.classList.remove("empty");
+      seat.dataset.playerId = player.id;
       seat.innerHTML = `
         <strong>${player.name}</strong>
         <span>${player.isHost ? "Host" : "Klar"} - ${player.stack} units</span>
       `;
+      seat.draggable = isHost && game.status === "lobby";
     }
   }
+
+  document.getElementById("tableHint").textContent =
+    isHost && game.status === "lobby"
+      ? "Drag spillere mellem pladserne"
+      : "Host styrer bordplacering";
 
   document.getElementById("lobbyRules").innerHTML = `
     <div class="rule-box"><span>Spillere</span><strong>${joined}/${game.maxPlayers}</strong></div>
@@ -120,6 +132,27 @@ function renderLobby(game) {
     <div class="rule-box"><span>Startstack</span><strong>1000</strong></div>
     <div class="rule-box"><span>Blinds</span><strong>${game.blinds.small}/${game.blinds.big}</strong></div>
   `;
+}
+
+async function saveSeatOrder(nextSeats) {
+  const { game } = await api(`/games/${currentGameCode}/seats`, {
+    method: "POST",
+    body: JSON.stringify({
+      playerId: currentPlayerId,
+      tableSeats: nextSeats
+    })
+  });
+  renderLobby(game);
+}
+
+function getRenderedSeatOrder() {
+  const seats = [];
+  for (let i = 0; i < 6; i += 1) {
+    const seat = document.getElementById(`seat${i}`);
+    if (seat.style.display === "none") continue;
+    seats.push(seat.dataset.playerId || null);
+  }
+  return seats;
 }
 
 async function loadLobby() {
@@ -222,6 +255,40 @@ document.getElementById("startGameButton").addEventListener("click", async () =>
   } catch (error) {
     document.getElementById("lobbyStatus").textContent = `Kunne ikke starte spil: ${error.message}`;
   }
+});
+
+document.querySelectorAll(".seat").forEach((seat) => {
+  seat.addEventListener("dragstart", (event) => {
+    if (!seat.draggable || !seat.dataset.playerId) {
+      event.preventDefault();
+      return;
+    }
+    draggedPlayerId = seat.dataset.playerId;
+  });
+
+  seat.addEventListener("dragover", (event) => {
+    if (draggedPlayerId) event.preventDefault();
+  });
+
+  seat.addEventListener("drop", async (event) => {
+    event.preventDefault();
+    if (!draggedPlayerId) return;
+
+    const targetPlayerId = seat.dataset.playerId || null;
+    const nextSeats = getRenderedSeatOrder().map((playerId) => {
+      if (playerId === draggedPlayerId) return targetPlayerId;
+      if (playerId === targetPlayerId) return draggedPlayerId;
+      return playerId;
+    });
+
+    draggedPlayerId = "";
+
+    try {
+      await saveSeatOrder(nextSeats);
+    } catch (error) {
+      document.getElementById("lobbyStatus").textContent = `Kunne ikke flytte spiller: ${error.message}`;
+    }
+  });
 });
 
 if ("serviceWorker" in navigator) {
