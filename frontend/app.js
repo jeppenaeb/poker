@@ -66,6 +66,12 @@ function renderJoinSummary(game) {
 }
 
 function renderLobby(game) {
+  if (game.status === "in_progress") {
+    renderGame(game);
+    showView("gameView");
+    return;
+  }
+
   document.getElementById("lobbyTitle").textContent = game.gameName;
   document.getElementById("lobbyCode").textContent = game.code;
 
@@ -161,7 +167,8 @@ function getRenderedSeatOrder() {
 
 async function loadLobby() {
   if (!currentGameCode) return;
-  const { game } = await api(`/games/${currentGameCode}/state`);
+  const playerQuery = currentPlayerId ? `?playerId=${encodeURIComponent(currentPlayerId)}` : "";
+  const { game } = await api(`/games/${currentGameCode}/state${playerQuery}`);
   renderLobby(game);
 }
 
@@ -255,11 +262,91 @@ document.getElementById("startGameButton").addEventListener("click", async () =>
       method: "POST",
       body: JSON.stringify({ playerId: currentPlayerId })
     });
-    renderLobby(game);
+    renderGame(game);
+    showView("gameView");
   } catch (error) {
     document.getElementById("lobbyStatus").textContent = `Kunne ikke starte spil: ${error.message}`;
   }
 });
+
+function cardLabel(card) {
+  if (!card) return "";
+  const suit = card.slice(0, 1);
+  const rank = card.slice(1);
+  const symbols = {
+    S: "&spades;",
+    H: "&hearts;",
+    D: "&diams;",
+    C: "&clubs;"
+  };
+  return `${symbols[suit] || suit}${rank}`;
+}
+
+function cardClass(card) {
+  return card && ["H", "D"].includes(card.slice(0, 1)) ? "card red-card" : "card";
+}
+
+function renderCards(cards) {
+  if (!cards || cards.length === 0) {
+    return `<div class="empty-board">Ingen faelleskort endnu</div>`;
+  }
+
+  return cards.map((card) => `<div class="${cardClass(card)}">${cardLabel(card)}</div>`).join("");
+}
+
+function renderGame(game) {
+  const hand = game.hand;
+  const currentPlayer = game.players.find((player) => player.id === currentPlayerId);
+
+  document.getElementById("gameTitle").textContent = game.gameName;
+  document.getElementById("gameCode").textContent = game.code;
+  document.getElementById("streetLabel").textContent = hand.phase;
+  document.getElementById("communityCards").innerHTML = renderCards(hand.communityCards);
+  document.getElementById("potBox").textContent = `Pot: ${hand.pot}`;
+
+  const actor = game.players.find((player) => player.id === hand.currentPlayerId);
+  document.getElementById("gameStatus").textContent =
+    actor && actor.id === currentPlayerId
+      ? "Det er din tur."
+      : `Venter paa ${actor ? actor.name : "naeste spiller"}.`;
+
+  for (let i = 0; i < 6; i += 1) {
+    const seat = document.getElementById(`gameSeat${i}`);
+    const playerId = game.tableSeats[i];
+    const player = game.players.find((item) => item.id === playerId);
+
+    if (!player) {
+      seat.style.display = "none";
+      seat.innerHTML = "";
+      continue;
+    }
+
+    seat.style.display = "";
+    seat.classList.toggle("is-current", player.id === hand.currentPlayerId);
+    seat.classList.toggle("is-you", player.id === currentPlayerId);
+
+    const badges = [
+      player.id === hand.dealerPlayerId ? "D" : "",
+      player.id === hand.smallBlindPlayerId ? "SB" : "",
+      player.id === hand.bigBlindPlayerId ? "BB" : ""
+    ].filter(Boolean);
+
+    seat.innerHTML = `
+      <strong>${player.id === currentPlayerId ? "Dig" : player.name}</strong>
+      <span>${player.stack} units</span>
+      <span>Bet: ${hand.bets[player.id] || 0}</span>
+      <div class="badge-line">${badges.map((badge) => `<b>${badge}</b>`).join("")}</div>
+    `;
+  }
+
+  document.getElementById("holeCards").innerHTML = renderCards(hand.holeCards[currentPlayerId] || []);
+  document.getElementById("gameRules").innerHTML = `
+    <div class="rule-box"><span>Blinds</span><strong>${game.blinds.small}/${game.blinds.big}</strong></div>
+    <div class="rule-box"><span>Hand</span><strong>#${hand.number}</strong></div>
+    <div class="rule-box"><span>Dealer</span><strong>${game.players.find((player) => player.id === hand.dealerPlayerId)?.name || "-"}</strong></div>
+    <div class="rule-box"><span>Din stack</span><strong>${currentPlayer ? currentPlayer.stack : 0}</strong></div>
+  `;
+}
 
 document.querySelectorAll(".seat").forEach((seat) => {
   seat.addEventListener("dragstart", (event) => {
