@@ -128,7 +128,11 @@ function renderLobby(game) {
 
   document.getElementById("lobbyRules").innerHTML = `
     <div class="rule-box"><span>Spillere</span><strong>${joined}/${game.maxPlayers}</strong></div>
-    <div class="rule-box"><span>Buy-ins</span><strong>${formatBuyIns(game)}</strong></div>
+    ${
+      game.buyIns.enabled
+        ? `<div class="rule-box"><span>Buy-ins</span><strong>${formatBuyIns(game)}</strong></div>`
+        : ""
+    }
     <div class="rule-box"><span>Startstack</span><strong>1000</strong></div>
     <div class="rule-box"><span>Blinds</span><strong>${game.blinds.small}/${game.blinds.big}</strong></div>
   `;
