@@ -88,8 +88,28 @@ function getGame(code) {
   return games.get(normalizeGameCode(code));
 }
 
+function startGame({ code, playerId }) {
+  const game = getGame(code);
+
+  if (!game) throw new Error("GAME_NOT_FOUND");
+  if (game.status !== "lobby") throw new Error("GAME_ALREADY_STARTED");
+
+  const player = game.players.find((item) => item.id === playerId);
+  if (!player || !player.isHost) throw new Error("ONLY_HOST_CAN_START");
+
+  if (game.players.length !== game.maxPlayers) {
+    throw new Error("LOBBY_NOT_FULL");
+  }
+
+  game.status = "in_progress";
+  game.startedAt = new Date().toISOString();
+
+  return game;
+}
+
 module.exports = {
   createGame,
   joinGame,
-  getGame
+  getGame,
+  startGame
 };
