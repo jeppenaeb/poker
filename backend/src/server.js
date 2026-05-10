@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-const { createGame, joinGame, getGame, getGameForPlayer, startGame, updateSeats } = require("./gameStore");
+const { createGame, joinGame, getGame, getGameForPlayer, playerAction, startGame, updateSeats } = require("./gameStore");
 const { normalizeGameCode } = require("./gameCode");
 
 const app = express();
@@ -105,6 +105,23 @@ app.post(`${API_BASE}/games/:code/seats`, (req, res) => {
 
     const game = updateSeats({ code, playerId, tableSeats });
     res.json({ game });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.post(`${API_BASE}/games/:code/action`, (req, res) => {
+  try {
+    const code = normalizeGameCode(req.params.code);
+    const { playerId, action, amount } = req.body;
+
+    if (!playerId || !action) {
+      return res.status(400).json({ error: "MISSING_ACTION_FIELDS" });
+    }
+
+    const game = playerAction({ code, playerId, action, amount });
+    const safeGame = getGameForPlayer(code, playerId) || game;
+    res.json({ game: safeGame });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
