@@ -84,8 +84,9 @@ function renderLobby(game) {
     document.getElementById("lobbyStatus").textContent = `${joined} / ${game.maxPlayers} spillere joinet. Lobbyen opdateres automatisk.`;
   }
 
+  document.getElementById("startGameButton").hidden = !isHost;
   document.getElementById("startGameButton").disabled = !canStart;
-  document.getElementById("startGameButton").textContent = isHost ? "Start spil" : "Venter paa host";
+  document.getElementById("startGameButton").textContent = "Start spil";
 
   for (let i = 0; i < 6; i += 1) {
     const seat = document.getElementById(`seat${i}`);
