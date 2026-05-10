@@ -147,6 +147,42 @@
           <button class="primary-action" id="startGameButton" disabled>Start spil</button>
         </section>
       </section>
+
+      <section class="view" id="gameView">
+        <header class="screen-header lobby-header">
+          <div>
+            <p class="eyebrow">Spil</p>
+            <h2 id="gameTitle">Poker</h2>
+          </div>
+          <div class="code-pill" id="gameCode">----</div>
+        </header>
+
+        <div class="status-strip" id="gameStatus">Henter spil...</div>
+
+        <section class="panel table-panel">
+          <div class="game-table">
+            <div class="board-center">
+              <div class="street-label" id="streetLabel">Preflop</div>
+              <div class="community-row" id="communityCards"></div>
+              <div class="pot-box" id="potBox">Pot: 0</div>
+            </div>
+            <div class="game-seat game-seat-a" id="gameSeat0"></div>
+            <div class="game-seat game-seat-b" id="gameSeat1"></div>
+            <div class="game-seat game-seat-c" id="gameSeat2"></div>
+            <div class="game-seat game-seat-d" id="gameSeat3"></div>
+            <div class="game-seat game-seat-e" id="gameSeat4"></div>
+            <div class="game-seat game-seat-f" id="gameSeat5"></div>
+          </div>
+        </section>
+
+        <section class="panel hand-panel">
+          <div>
+            <p class="eyebrow">Dine kort</p>
+            <div class="hole-card-row" id="holeCards"></div>
+          </div>
+          <div class="rule-grid" id="gameRules"></div>
+        </section>
+      </section>
     </main>
 
     <script src="/poker/app.js"></script>
