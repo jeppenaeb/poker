@@ -60,7 +60,7 @@ function renderJoinSummary(game) {
     <strong>${game.gameName}</strong>
     <span>Kode: ${game.code}</span>
     <span>Spillere: ${game.players.length} / ${game.maxPlayers}</span>
-    <span>Buy-ins: ${formatBuyIns(game)}</span>
+    ${game.buyIns.enabled ? `<span>Buy-ins: ${formatBuyIns(game)}</span>` : ""}
     <span>Startstack: 1000 units - Blinds: ${game.blinds.small}/${game.blinds.big}</span>
   `;
 }
