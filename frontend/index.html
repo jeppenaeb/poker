@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="da">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Poker" />
+    <meta name="theme-color" content="#020617" />
+    <link rel="manifest" href="/poker/manifest.webmanifest" />
+    <link rel="stylesheet" href="/poker/styles.css" />
+    <title>Poker</title>
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="view is-active" id="homeView">
+        <div class="hero">
+          <p class="eyebrow">Naeb Poker</p>
+          <h1>Texas Hold'em med vennerne</h1>
+          <p class="lede">Host et spil, del koden, og lad alle spille fra deres egen telefon.</p>
+        </div>
+
+        <div class="action-stack">
+          <button class="primary-action" data-go="hostView">Host game</button>
+          <button class="secondary-action" data-go="joinView">Join game</button>
+        </div>
+      </section>
+
+      <section class="view" id="hostView">
+        <header class="screen-header">
+          <button class="ghost-button" data-go="homeView">Tilbage</button>
+          <div>
+            <p class="eyebrow">Opret spil</p>
+            <h2>Host game</h2>
+          </div>
+        </header>
+
+        <form class="panel form-panel" id="hostForm">
+          <label>
+            <span>Dit navn</span>
+            <input name="hostName" maxlength="12" placeholder="Fx Jeppe" required />
+          </label>
+
+          <label>
+            <span>Spilnavn</span>
+            <input name="gameName" maxlength="12" placeholder="Fredagspoker" required />
+          </label>
+
+          <label>
+            <span>Antal spillere</span>
+            <select name="maxPlayers" required>
+              <option value="2">2 spillere</option>
+              <option value="3">3 spillere</option>
+              <option value="4">4 spillere</option>
+              <option value="5">5 spillere</option>
+              <option value="6" selected>6 spillere</option>
+            </select>
+          </label>
+
+          <label class="check-row">
+            <input type="checkbox" name="buyInsEnabled" id="buyInsEnabled" />
+            <span>Tillad buy-ins</span>
+          </label>
+
+          <div class="buyin-options" id="buyInOptions" hidden>
+            <label>
+              <span>Maks. buy-ins pr. spiller</span>
+              <select name="maxBuyIns">
+                <option value="1" selected>1 buy-in</option>
+                <option value="2">2 buy-ins</option>
+              </select>
+            </label>
+
+            <label>
+              <span>Tilladt til og med blind level</span>
+              <select name="buyInsUntilLevel">
+                <option value="2">Level 2</option>
+                <option value="3" selected>Level 3</option>
+                <option value="4">Level 4</option>
+                <option value="5">Level 5</option>
+              </select>
+            </label>
+          </div>
+
+          <button class="primary-action" type="submit">Opret spil</button>
+          <p class="message" id="hostMessage"></p>
+        </form>
+      </section>
+
+      <section class="view" id="joinView">
+        <header class="screen-header">
+          <button class="ghost-button" data-go="homeView">Tilbage</button>
+          <div>
+            <p class="eyebrow">Deltag</p>
+            <h2>Join game</h2>
+          </div>
+        </header>
+
+        <form class="panel form-panel" id="joinLookupForm">
+          <label>
+            <span>Spilkode</span>
+            <input class="game-code-input" name="code" maxlength="5" placeholder="K7M4" required />
+          </label>
+          <button class="secondary-action" type="submit">Se spil</button>
+          <p class="message" id="lookupMessage"></p>
+        </form>
+
+        <form class="panel form-panel join-details" id="joinForm" hidden>
+          <div class="summary-card" id="joinSummary"></div>
+          <label>
+            <span>Dit navn</span>
+            <input name="playerName" maxlength="12" placeholder="Fx Mette" required />
+          </label>
+          <button class="primary-action" type="submit">Join game</button>
+          <p class="message" id="joinMessage"></p>
+        </form>
+      </section>
+
+      <section class="view" id="lobbyView">
+        <header class="screen-header lobby-header">
+          <div>
+            <p class="eyebrow">Lobby</p>
+            <h2 id="lobbyTitle">Poker</h2>
+          </div>
+          <div class="code-pill" id="lobbyCode">----</div>
+        </header>
+
+        <div class="status-strip" id="lobbyStatus">Henter lobby...</div>
+
+        <section class="panel table-panel">
+          <div class="felt-table">
+            <div class="table-core">
+              <strong>Bord</strong>
+              <span id="tableHint">Placeringer kommer her</span>
+            </div>
+            <div class="seat seat-a" id="seat0"></div>
+            <div class="seat seat-b" id="seat1"></div>
+            <div class="seat seat-c" id="seat2"></div>
+            <div class="seat seat-d" id="seat3"></div>
+            <div class="seat seat-e" id="seat4"></div>
+            <div class="seat seat-f" id="seat5"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="rule-grid" id="lobbyRules"></div>
+          <button class="primary-action" id="startGameButton" disabled>Start spil</button>
+        </section>
+      </section>
+    </main>
+
+    <script src="/poker/app.js"></script>
+  </body>
+</html>
