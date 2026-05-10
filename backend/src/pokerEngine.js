@@ -160,6 +160,10 @@ function advanceStreet(game) {
 
   resetRoundBets(game);
   hand.currentPlayerId = firstPostFlopPlayerId(game);
+
+  if (!hand.currentPlayerId) {
+    advanceStreet(game);
+  }
 }
 
 function settleAfterAction(game) {
