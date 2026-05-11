@@ -152,7 +152,8 @@ h2 {
   min-height: 40px;
   background: #1e293b;
   color: var(--text);
-}\n
+}
+
 .screen-header {
   display: flex;
   align-items: center;
