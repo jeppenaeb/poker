@@ -152,8 +152,7 @@ h2 {
   min-height: 40px;
   background: #1e293b;
   color: var(--text);
-}
-
+}\n
 .screen-header {
   display: flex;
   align-items: center;
@@ -526,6 +525,17 @@ select {
 .hand-panel {
   display: grid;
   gap: 16px;
+}
+
+.hand-strength {
+  margin-top: 10px;
+  border: 1px solid rgba(134, 239, 172, 0.28);
+  border-radius: 12px;
+  background: rgba(20, 83, 45, 0.24);
+  color: #dcfce7;
+  padding: 10px 12px;
+  text-align: center;
+  font-weight: 800;
 }
 
 .action-panel {
