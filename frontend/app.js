@@ -86,7 +86,7 @@ function renderLobby(game) {
   } else if (full && isHost) {
     document.getElementById("lobbyStatus").textContent = `${joined} / ${game.maxPlayers} spillere er klar. Du kan starte spillet.`;
   } else if (full) {
-    document.getElementById("lobbyStatus").textContent = `${joined} / ${game.maxPlayers} spillere er klar. Venter paa at host starter spillet.`;
+    document.getElementById("lobbyStatus").textContent = `${joined} / ${game.maxPlayers} spillere er klar. Venter på at host starter spillet.`;
   } else {
     document.getElementById("lobbyStatus").textContent = `${joined} / ${game.maxPlayers} spillere joinet. Lobbyen opdateres automatisk.`;
   }
@@ -288,10 +288,103 @@ function cardClass(card) {
 
 function renderCards(cards) {
   if (!cards || cards.length === 0) {
-    return `<div class="empty-board">Ingen faelleskort endnu</div>`;
+    return `<div class="empty-board">Ingen fælleskort endnu</div>`;
   }
 
   return cards.map((card) => `<div class="${cardClass(card)}">${cardLabel(card)}</div>`).join("");
+}
+
+function rankValue(card) {
+  const rank = card.slice(1);
+  const values = {
+    "2": 2,
+    "3": 3,
+    "4": 4,
+    "5": 5,
+    "6": 6,
+    "7": 7,
+    "8": 8,
+    "9": 9,
+    "10": 10,
+    J: 11,
+    Q: 12,
+    K: 13,
+    A: 14
+  };
+  return values[rank] || 0;
+}
+
+function rankName(value) {
+  const names = {
+    14: "esser",
+    13: "konger",
+    12: "damer",
+    11: "knægte",
+    10: "tiere",
+    9: "niere",
+    8: "ottere",
+    7: "syvere",
+    6: "seksere",
+    5: "femmere",
+    4: "firere",
+    3: "treere",
+    2: "toere"
+  };
+  return names[value] || "";
+}
+
+function hasStraight(values) {
+  const unique = [...new Set(values)].sort((a, b) => a - b);
+  if (unique.includes(14)) unique.unshift(1);
+
+  let run = 1;
+  for (let i = 1; i < unique.length; i += 1) {
+    if (unique[i] === unique[i - 1] + 1) {
+      run += 1;
+      if (run >= 5) return true;
+    } else {
+      run = 1;
+    }
+  }
+
+  return false;
+}
+
+function evaluateHand(cards) {
+  if (!cards || cards.length < 2) return "-";
+
+  const values = cards.map(rankValue).filter(Boolean);
+  const counts = values.reduce((acc, value) => {
+    acc[value] = (acc[value] || 0) + 1;
+    return acc;
+  }, {});
+  const grouped = Object.entries(counts)
+    .map(([value, count]) => ({ value: Number(value), count }))
+    .sort((a, b) => b.count - a.count || b.value - a.value);
+
+  const suits = cards.reduce((acc, card) => {
+    const suit = card.slice(0, 1);
+    acc[suit] = acc[suit] || [];
+    acc[suit].push(rankValue(card));
+    return acc;
+  }, {});
+  const flushValues = Object.values(suits).find((items) => items.length >= 5);
+  const straight = hasStraight(values);
+  const straightFlush = flushValues ? hasStraight(flushValues) : false;
+
+  if (straightFlush && flushValues.includes(14) && flushValues.includes(13)) return "Royal flush";
+  if (straightFlush) return "Straight flush";
+  if (grouped[0]?.count === 4) return `Fire ens, ${rankName(grouped[0].value)}`;
+  if (grouped[0]?.count === 3 && grouped.some((item, index) => index > 0 && item.count >= 2)) return "Fuldt hus";
+  if (flushValues) return "Flush";
+  if (straight) return "Straight";
+  if (grouped[0]?.count === 3) return `Tre ens, ${rankName(grouped[0].value)}`;
+
+  const pairs = grouped.filter((item) => item.count === 2);
+  if (pairs.length >= 2) return `To par, ${rankName(pairs[0].value)} og ${rankName(pairs[1].value)}`;
+  if (pairs.length === 1) return `Par ${rankName(pairs[0].value)}`;
+
+  return `Højt kort ${rankName(Math.max(...values))}`;
 }
 
 function renderGame(game) {
@@ -308,10 +401,10 @@ function renderGame(game) {
   const actor = game.players.find((player) => player.id === hand.currentPlayerId);
   document.getElementById("gameStatus").textContent =
     winner
-      ? `${winner.name} vinder haanden.`
+      ? `${winner.name} vinder hånden.`
       : actor && actor.id === currentPlayerId
       ? "Det er din tur."
-      : `Venter paa ${actor ? actor.name : "naeste spiller"}.`;
+      : `Venter på ${actor ? actor.name : "næste spiller"}.`;
 
   for (let i = 0; i < 6; i += 1) {
     const seat = document.getElementById(`gameSeat${i}`);
@@ -342,7 +435,9 @@ function renderGame(game) {
     `;
   }
 
-  document.getElementById("holeCards").innerHTML = renderCards(hand.holeCards[currentPlayerId] || []);
+  const ownCards = hand.holeCards[currentPlayerId] || [];
+  document.getElementById("holeCards").innerHTML = renderCards(ownCards);
+  document.getElementById("handStrength").textContent = `Din hånd: ${evaluateHand([...ownCards, ...hand.communityCards])}`;
   document.getElementById("gameRules").innerHTML = `
     <div class="rule-box"><span>Blinds</span><strong>${game.blinds.small}/${game.blinds.big}</strong></div>
     <div class="rule-box"><span>Hand</span><strong>#${hand.number}</strong></div>
