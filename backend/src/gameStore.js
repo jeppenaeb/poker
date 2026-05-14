@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const { generateGameCode, normalizeGameCode } = require("./gameCode");
 const { applyPlayerAction, createFirstHand } = require("./pokerEngine");
+const { createNextHand } = require("./nextHandEngine");
 
 const games = new Map();
 
@@ -162,11 +163,24 @@ function playerAction({ code, playerId, action, amount }) {
   return applyPlayerAction(game, { playerId, action, amount });
 }
 
+function nextHand({ code, playerId }) {
+  const game = getGame(code);
+
+  if (!game) throw new Error("GAME_NOT_FOUND");
+  if (game.status !== "in_progress") throw new Error("GAME_NOT_IN_PROGRESS");
+
+  const player = game.players.find((item) => item.id === playerId);
+  if (!player || !player.isHost) throw new Error("ONLY_HOST_CAN_START_NEXT_HAND");
+
+  return createNextHand(game);
+}
+
 module.exports = {
   createGame,
   joinGame,
   getGame,
   getGameForPlayer,
+  nextHand,
   playerAction,
   startGame,
   updateSeats
