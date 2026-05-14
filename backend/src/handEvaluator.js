@@ -51,6 +51,26 @@ function rankName(value) {
   return names[value] || "";
 }
 
+function highCardName(value) {
+  const names = {
+    14: "es",
+    13: "konge",
+    12: "dame",
+    11: "kn\u00e6gt",
+    10: "10",
+    9: "9",
+    8: "8",
+    7: "7",
+    6: "6",
+    5: "5",
+    4: "4",
+    3: "3",
+    2: "2"
+  };
+
+  return names[value] || "";
+}
+
 function combinations(items, size) {
   const result = [];
 
@@ -99,7 +119,7 @@ function describeEvaluation(evaluation) {
   if (evaluation.category === 3) return `Tre ens, ${rankName(first)}`;
   if (evaluation.category === 2) return `To par, ${rankName(first)} og ${rankName(second)}`;
   if (evaluation.category === 1) return `Par ${rankName(first)}`;
-  if (evaluation.category === 0) return `H\u00f8jt kort ${rankName(first)}`;
+  if (evaluation.category === 0) return `H\u00f8jt kort ${highCardName(first)}`;
 
   return CATEGORY_NAMES[evaluation.category];
 }
