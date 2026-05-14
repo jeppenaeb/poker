@@ -89,3 +89,120 @@
     }
   });
 })();
+
+(() => {
+  const visualSlotsByPlayerCount = {
+    2: [3, 0],
+    3: [3, 5, 1],
+    4: [3, 4, 0, 2],
+    5: [3, 4, 5, 1, 2],
+    6: [3, 4, 5, 0, 1, 2]
+  };
+
+  function getCurrentPlayerId() {
+    return typeof currentPlayerId === "undefined" ? "" : currentPlayerId;
+  }
+
+  function getVisibleSeatCount(game) {
+    return Math.max(2, Math.min(6, Number(game.maxPlayers || 6)));
+  }
+
+  function rotateIndexesAroundPlayer(game) {
+    const seatCount = getVisibleSeatCount(game);
+    const indexes = Array.from({ length: seatCount }, (_, index) => index);
+    const ownSeatIndex = game.tableSeats.indexOf(getCurrentPlayerId());
+
+    if (ownSeatIndex < 0 || ownSeatIndex >= seatCount) {
+      return indexes;
+    }
+
+    return indexes.slice(ownSeatIndex).concat(indexes.slice(0, ownSeatIndex));
+  }
+
+  function clearLobbySeats() {
+    for (let index = 0; index < 6; index += 1) {
+      const seat = document.getElementById(`seat${index}`);
+      if (!seat) continue;
+
+      seat.classList.remove("empty");
+      seat.innerHTML = "";
+      seat.style.display = "none";
+      seat.draggable = false;
+      seat.dataset.playerId = "";
+      seat.dataset.logicalIndex = "";
+    }
+  }
+
+  function renderSeat(seat, game, logicalIndex, isHost) {
+    const playerId = game.tableSeats[logicalIndex] || "";
+    const player = game.players.find((item) => item.id === playerId);
+
+    seat.style.display = "";
+    seat.dataset.logicalIndex = String(logicalIndex);
+    seat.dataset.playerId = playerId;
+    seat.draggable = false;
+
+    if (!player) {
+      seat.classList.add("empty");
+      seat.innerHTML = `<strong>Ledig</strong><span>venter</span>`;
+      return;
+    }
+
+    seat.classList.remove("empty");
+    seat.draggable = isHost && game.status === "lobby";
+    seat.innerHTML = `
+      <strong>${player.id === getCurrentPlayerId() ? "Dig" : player.name}</strong>
+      <span>${player.isHost ? "Host" : "Klar"} - ${player.stack} units</span>
+    `;
+  }
+
+  function applyLobbyPerspective(game) {
+    if (!game || game.status !== "lobby") return;
+
+    const seatCount = getVisibleSeatCount(game);
+    const visualSlots = visualSlotsByPlayerCount[seatCount] || visualSlotsByPlayerCount[6];
+    const logicalIndexes = rotateIndexesAroundPlayer(game);
+    const currentPlayer = game.players.find((player) => player.id === getCurrentPlayerId());
+    const isHost = Boolean(currentPlayer?.isHost);
+
+    clearLobbySeats();
+
+    logicalIndexes.forEach((logicalIndex, visualIndex) => {
+      const visualSlot = visualSlots[visualIndex];
+      const seat = document.getElementById(`seat${visualSlot}`);
+      if (!seat) return;
+      renderSeat(seat, game, logicalIndex, isHost);
+    });
+  }
+
+  if (typeof renderLobby === "function") {
+    const originalRenderLobby = renderLobby;
+    renderLobby = (game) => {
+      originalRenderLobby(game);
+      applyLobbyPerspective(game);
+    };
+  }
+
+  if (typeof getRenderedSeatOrder === "function") {
+    getRenderedSeatOrder = () => {
+      const seats = [];
+
+      for (let index = 0; index < 6; index += 1) {
+        const seat = document.getElementById(`seat${index}`);
+        if (!seat || seat.style.display === "none") continue;
+
+        const logicalIndex = Number(seat.dataset.logicalIndex);
+        if (!Number.isInteger(logicalIndex)) continue;
+
+        seats.push({
+          logicalIndex,
+          playerId: seat.dataset.playerId || null
+        });
+      }
+
+      return seats
+        .sort((first, second) => first.logicalIndex - second.logicalIndex)
+        .map((item) => item.playerId);
+    };
+  }
+})();
