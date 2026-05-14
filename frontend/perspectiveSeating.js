@@ -11,8 +11,12 @@
     6: [3, 4, 5, 0, 1, 2]
   };
 
-  function playerOrderFromCurrentPlayer(tableSeats) {
-    const currentIndex = tableSeats.indexOf(currentPlayerId);
+  function ownPlayerIdFromGame(game) {
+    return Object.keys(game.hand?.holeCards || {})[0] || "";
+  }
+
+  function playerOrderFromCurrentPlayer(tableSeats, ownPlayerId) {
+    const currentIndex = tableSeats.indexOf(ownPlayerId);
 
     if (currentIndex === -1) return tableSeats;
 
@@ -30,7 +34,7 @@
     }
   }
 
-  function renderSeat(seat, game, hand, player) {
+  function renderSeat(seat, game, hand, player, ownPlayerId) {
     const isFolded = hand.foldedPlayerIds.includes(player.id);
     const badges = [
       player.id === hand.dealerPlayerId ? "D" : "",
@@ -40,11 +44,11 @@
 
     seat.style.display = "";
     seat.classList.toggle("is-current", player.id === hand.currentPlayerId && !isFolded);
-    seat.classList.toggle("is-you", player.id === currentPlayerId);
+    seat.classList.toggle("is-you", player.id === ownPlayerId);
     seat.classList.toggle("is-folded", isFolded);
 
     seat.innerHTML = `
-      <strong>${player.id === currentPlayerId ? "Dig" : player.name}</strong>
+      <strong>${player.id === ownPlayerId ? "Dig" : player.name}</strong>
       <span>${player.stack} units</span>
       <span>Bet: ${hand.bets[player.id] || 0}</span>
       <div class="badge-line">${badges.map((badge) => `<b>${badge}</b>`).join("")}</div>
@@ -56,7 +60,8 @@
     const hand = game.hand;
     if (!hand || !Array.isArray(game.tableSeats)) return;
 
-    const orderedPlayerIds = playerOrderFromCurrentPlayer(game.tableSeats).filter((playerId) => {
+    const ownPlayerId = ownPlayerIdFromGame(game);
+    const orderedPlayerIds = playerOrderFromCurrentPlayer(game.tableSeats, ownPlayerId).filter((playerId) => {
       return game.players.some((player) => player.id === playerId);
     });
     const visualSlots = visualSlotsByPlayerCount[orderedPlayerIds.length] || visualSlotsByPlayerCount[6];
@@ -69,7 +74,7 @@
       const player = game.players.find((item) => item.id === playerId);
 
       if (!seat || !player) return;
-      renderSeat(seat, game, hand, player);
+      renderSeat(seat, game, hand, player, ownPlayerId);
     });
   }
 
