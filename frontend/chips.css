@@ -1,0 +1,145 @@
+.chip-bet-panel {
+  display: grid;
+  gap: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.72);
+  padding: 12px;
+}
+
+.chip-bet-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #cbd5e1;
+  font-size: 13px;
+}
+
+.chip-bet-total strong {
+  color: #f8fafc;
+  font-size: 24px;
+}
+
+.chip-preview,
+.chip-button-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip-button-row {
+  gap: 10px;
+}
+
+.chip-button,
+.chip-reset-button {
+  border: 0;
+  border-radius: 12px;
+  background: #1e293b;
+  color: #f8fafc;
+  padding: 8px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.chip-button {
+  min-width: 54px;
+  min-height: 54px;
+  display: grid;
+  place-items: center;
+}
+
+.chip-reset-button {
+  min-height: 42px;
+  padding: 8px 12px;
+}
+
+.bet-chip,
+.stack-chip {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.82);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.28);
+  font-weight: 900;
+  color: white;
+  line-height: 1;
+}
+
+.bet-chip {
+  width: 44px;
+  height: 44px;
+  font-size: 12px;
+}
+
+.chip-button .bet-chip {
+  width: 38px;
+  height: 38px;
+  font-size: 11px;
+}
+
+.stack-chip {
+  width: 24px;
+  height: 24px;
+  border-width: 2px;
+  font-size: 8px;
+  margin-left: -7px;
+}
+
+.stack-chip:first-child {
+  margin-left: 0;
+}
+
+.chip-10 {
+  background: #f8fafc;
+  color: #111827;
+  border-color: #cbd5e1;
+}
+
+.chip-20 {
+  background: #2563eb;
+}
+
+.chip-50 {
+  background: #16a34a;
+}
+
+.chip-100 {
+  background: #dc2626;
+}
+
+.chip-500 {
+  background: #f59e0b;
+  color: #111827;
+}
+
+.chip-preview-more {
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.seat-chip-stack {
+  position: absolute;
+  right: -9px;
+  bottom: -9px;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+@media (max-width: 560px) {
+  .chip-button {
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  .bet-chip {
+    width: 40px;
+    height: 40px;
+    font-size: 11px;
+  }
+}
