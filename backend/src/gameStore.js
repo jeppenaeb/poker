@@ -90,6 +90,19 @@ function getGame(code) {
   return games.get(normalizeGameCode(code));
 }
 
+function revealedShowdownHoleCards(game) {
+  const hand = game.hand;
+
+  if (!hand || hand.phase !== "hand_complete" || hand.winningReason !== "showdown") {
+    return {};
+  }
+
+  return (hand.showdownResults || []).reduce((revealedCards, result) => {
+    revealedCards[result.playerId] = hand.holeCards[result.playerId] || [];
+    return revealedCards;
+  }, {});
+}
+
 function getGameForPlayer(code, playerId) {
   const game = getGame(code);
   if (!game) return null;
@@ -97,6 +110,8 @@ function getGameForPlayer(code, playerId) {
   const safeGame = JSON.parse(JSON.stringify(game));
 
   if (safeGame.hand && safeGame.hand.holeCards) {
+    safeGame.hand.revealedHoleCards = revealedShowdownHoleCards(game);
+
     const ownCards = safeGame.hand.holeCards[playerId] || [];
     safeGame.hand.holeCards = {
       [playerId]: ownCards
