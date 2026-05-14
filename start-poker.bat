@@ -1,6 +1,8 @@
 @echo off
 cd /d "%~dp0"
 
+echo Starting Naeb Poker...
+echo.
 echo Closing old Node/poker server if it is already running...
 taskkill /IM node.exe /F >nul 2>nul
 
