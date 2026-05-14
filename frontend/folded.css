@@ -1,0 +1,33 @@
+.game-seat.is-folded {
+  background: #e5e7eb;
+  border-color: #cbd5e1;
+  color: #64748b;
+  opacity: 0.78;
+  filter: grayscale(1);
+}
+
+.game-seat.is-folded strong,
+.game-seat.is-folded span {
+  color: #64748b;
+}
+
+.game-seat.is-folded .badge-line {
+  opacity: 0.45;
+}
+
+.folded-stamp {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%) rotate(-12deg);
+  border: 2px solid #64748b;
+  border-radius: 8px;
+  background: rgba(248, 250, 252, 0.92);
+  color: #334155;
+  padding: 4px 9px;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  pointer-events: none;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
+}
