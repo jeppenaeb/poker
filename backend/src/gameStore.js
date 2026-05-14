@@ -13,12 +13,17 @@ function createPlayer(name, isHost = false) {
     stack: 1000,
     buyInsUsed: 0,
     chipsBought: 1000,
-    status: "active"
+    status: "active",
+    message: ""
   };
 }
 
 function sanitizeName(name) {
   return String(name || "").trim().slice(0, 12);
+}
+
+function sanitizeMessage(message) {
+  return String(message || "").trim().slice(0, 50);
 }
 
 function createGame({
@@ -178,6 +183,18 @@ function playerAction({ code, playerId, action, amount }) {
   return applyPlayerAction(game, { playerId, action, amount });
 }
 
+function setPlayerMessage({ code, playerId, message }) {
+  const game = getGame(code);
+
+  if (!game) throw new Error("GAME_NOT_FOUND");
+
+  const player = game.players.find((item) => item.id === playerId);
+  if (!player) throw new Error("PLAYER_NOT_FOUND");
+
+  player.message = sanitizeMessage(message);
+  return game;
+}
+
 function nextHand({ code, playerId }) {
   const game = getGame(code);
 
@@ -197,6 +214,7 @@ module.exports = {
   getGameForPlayer,
   nextHand,
   playerAction,
+  setPlayerMessage,
   startGame,
   updateSeats
 };
