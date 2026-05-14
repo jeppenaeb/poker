@@ -31,27 +31,7 @@ function rankValue(card) {
   return values[rank] || 0;
 }
 
-function rankName(value) {
-  const names = {
-    14: "esser",
-    13: "konger",
-    12: "damer",
-    11: "kn\u00e6gte",
-    10: "tiere",
-    9: "niere",
-    8: "ottere",
-    7: "syvere",
-    6: "seksere",
-    5: "femmere",
-    4: "firere",
-    3: "treere",
-    2: "toere"
-  };
-
-  return names[value] || "";
-}
-
-function highCardName(value) {
+function singleRankName(value) {
   const names = {
     14: "es",
     13: "konge",
@@ -66,6 +46,26 @@ function highCardName(value) {
     4: "4",
     3: "3",
     2: "2"
+  };
+
+  return names[value] || "";
+}
+
+function madeRankName(value) {
+  const names = {
+    14: "esser",
+    13: "konger",
+    12: "damer",
+    11: "kn\u00e6gte",
+    10: "10ere",
+    9: "9ere",
+    8: "8ere",
+    7: "7ere",
+    6: "6ere",
+    5: "5ere",
+    4: "4ere",
+    3: "3ere",
+    2: "2ere"
   };
 
   return names[value] || "";
@@ -115,11 +115,11 @@ function describeEvaluation(evaluation) {
   const [first, second] = evaluation.tiebreakers;
 
   if (evaluation.category === 8 && first === 14) return "Royal flush";
-  if (evaluation.category === 7) return `Fire ens, ${rankName(first)}`;
-  if (evaluation.category === 3) return `Tre ens, ${rankName(first)}`;
-  if (evaluation.category === 2) return `To par, ${rankName(first)} og ${rankName(second)}`;
-  if (evaluation.category === 1) return `Par ${rankName(first)}`;
-  if (evaluation.category === 0) return `H\u00f8jt kort ${highCardName(first)}`;
+  if (evaluation.category === 7) return `Fire ${madeRankName(first)}`;
+  if (evaluation.category === 3) return `Tre ${madeRankName(first)}`;
+  if (evaluation.category === 2) return `To par, ${singleRankName(first)} og ${singleRankName(second)}`;
+  if (evaluation.category === 1) return `Par ${singleRankName(first)}`;
+  if (evaluation.category === 0) return `H\u00f8jt kort ${singleRankName(first)}`;
 
   return CATEGORY_NAMES[evaluation.category];
 }
