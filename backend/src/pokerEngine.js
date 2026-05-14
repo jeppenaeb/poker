@@ -31,6 +31,13 @@ function pickRandomDealer(tableSeats) {
   return tableSeats[Math.floor(Math.random() * tableSeats.length)];
 }
 
+function activeSeatIds(game) {
+  return game.tableSeats.filter((playerId) => {
+    const player = game.players.find((item) => item.id === playerId);
+    return player && player.status === "active" && player.stack > 0;
+  });
+}
+
 function getPositions(tableSeats) {
   const dealerIndex = 0;
 
@@ -118,13 +125,22 @@ function resetRoundBets(game) {
 function awardPotToLastPlayer(game) {
   const winnerId = eligiblePlayerIds(game)[0];
   const winner = game.players.find((player) => player.id === winnerId);
+  const potAmount = game.hand.pot;
 
   if (winner) {
-    winner.stack += game.hand.pot;
+    winner.stack += potAmount;
   }
 
   game.hand.winnerPlayerId = winnerId;
   game.hand.winnerPlayerIds = winnerId ? [winnerId] : [];
+  game.hand.awardedPots = [
+    {
+      amount: potAmount,
+      winnerPlayerIds: winnerId ? [winnerId] : [],
+      winningHand: ""
+    }
+  ];
+  game.hand.winningHand = "";
   game.hand.winningReason = "fold";
   game.hand.phase = "hand_complete";
   game.hand.currentPlayerId = null;
@@ -352,9 +368,9 @@ function applyPlayerAction(game, { playerId, action, amount }) {
   return game;
 }
 
-function createFirstHand(game) {
-  const firstDealerPlayerId = pickRandomDealer(game.tableSeats);
-  const normalizedSeats = normalizeSeatsForDealer(game.tableSeats, firstDealerPlayerId);
+function createHand(game, dealerPlayerId, handNumber) {
+  const activeSeats = activeSeatIds(game);
+  const normalizedSeats = normalizeSeatsForDealer(activeSeats, dealerPlayerId);
   const deck = shuffleDeck(createDeck());
   const positions = getPositions(normalizedSeats);
   const holeCards = dealHoleCards(deck, normalizedSeats);
@@ -372,7 +388,7 @@ function createFirstHand(game) {
 
   game.tableSeats = normalizedSeats;
   game.hand = {
-    number: 1,
+    number: handNumber,
     phase: "preflop",
     deck,
     communityCards: [],
@@ -392,7 +408,62 @@ function createFirstHand(game) {
   return game;
 }
 
+function markEliminatedPlayers(game) {
+  game.players.forEach((player) => {
+    if (player.status === "active" && player.stack <= 0) {
+      player.status = "eliminated";
+    }
+  });
+}
+
+function nextDealerAfter(game, previousDealerPlayerId, activeSeats) {
+  const previousIndex = game.tableSeats.indexOf(previousDealerPlayerId);
+
+  if (previousIndex === -1) return activeSeats[0];
+
+  let index = previousIndex;
+  for (let i = 0; i < game.tableSeats.length; i += 1) {
+    index = nextSeatIndex(game.tableSeats, index);
+    const playerId = game.tableSeats[index];
+    if (activeSeats.includes(playerId)) return playerId;
+  }
+
+  return activeSeats[0];
+}
+
+function createFirstHand(game) {
+  const firstDealerPlayerId = pickRandomDealer(activeSeatIds(game));
+  return createHand(game, firstDealerPlayerId, 1);
+}
+
+function createNextHand(game) {
+  if (!game.hand || game.hand.phase !== "hand_complete") {
+    throw new Error("HAND_NOT_COMPLETE");
+  }
+
+  const previousDealerPlayerId = game.hand.dealerPlayerId;
+  const previousHandNumber = game.hand.number;
+
+  markEliminatedPlayers(game);
+
+  const activeSeats = activeSeatIds(game);
+
+  if (activeSeats.length < 2) {
+    game.status = "completed";
+    game.completedAt = new Date().toISOString();
+    game.winnerPlayerId = activeSeats[0] || null;
+    game.hand.currentPlayerId = null;
+    return game;
+  }
+
+  const nextDealerPlayerId = nextDealerAfter(game, previousDealerPlayerId, activeSeats);
+  game.tableSeats = activeSeats;
+
+  return createHand(game, nextDealerPlayerId, previousHandNumber + 1);
+}
+
 module.exports = {
   applyPlayerAction,
-  createFirstHand
+  createFirstHand,
+  createNextHand
 };
