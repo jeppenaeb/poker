@@ -39,12 +39,12 @@
     return `${symbols[suit] || suit}${rank}`;
   }
 
-  function renderMiniCard(card, bestCards) {
+  function renderMiniCard(card, bestCards, isWinner) {
     const suit = card.slice(0, 1);
     const isRed = suit === "H" || suit === "D";
-    const isBest = bestCards.has(card);
+    const isBest = isWinner && bestCards.has(card);
     return `
-      <span class="showdown-mini-card ${isRed ? "is-red" : ""} ${isBest ? "is-best" : "is-unused"}">
+      <span class="showdown-mini-card ${isRed ? "is-red" : ""} ${isBest ? "is-best" : "is-neutral"}">
         ${cardText(card)}
       </span>
     `;
@@ -52,6 +52,40 @@
 
   function clearShowdownReveals() {
     document.querySelectorAll(".showdown-reveal").forEach((element) => element.remove());
+    document.querySelectorAll("#communityCards .card").forEach((card) => {
+      card.classList.remove("showdown-board-best", "showdown-board-unused");
+    });
+  }
+
+  function winningPlayerIds(hand) {
+    const ids = new Set(hand.winnerPlayerIds || []);
+    (hand.awardedPots || []).forEach((pot) => {
+      (pot.winnerPlayerIds || []).forEach((playerId) => ids.add(playerId));
+    });
+    return ids;
+  }
+
+  function winningBestCards(hand) {
+    const winners = winningPlayerIds(hand);
+    const bestCards = new Set();
+
+    (hand.showdownResults || []).forEach((result) => {
+      if (!winners.has(result.playerId)) return;
+      (result.cards || []).forEach((card) => bestCards.add(card));
+    });
+
+    return bestCards;
+  }
+
+  function highlightBoardCards(hand) {
+    const bestCards = winningBestCards(hand);
+    const boardCards = document.querySelectorAll("#communityCards .card");
+
+    (hand.communityCards || []).forEach((card, index) => {
+      const cardElement = boardCards[index];
+      if (!cardElement) return;
+      cardElement.classList.add(bestCards.has(card) ? "showdown-board-best" : "showdown-board-unused");
+    });
   }
 
   function renderShowdownReveals(game) {
@@ -60,6 +94,7 @@
 
     const resultsByPlayer = new Map((hand.showdownResults || []).map((result) => [result.playerId, result]));
     const revealedHoleCards = hand.revealedHoleCards || {};
+    const winners = winningPlayerIds(hand);
     const orderedPlayers = orderedPlayersForPerspective(game);
     const visualSlots = visualSlotsByPlayerCount[orderedPlayers.length] || visualSlotsByPlayerCount[6];
 
@@ -72,18 +107,20 @@
       if (!seat || seat.style.display === "none") return;
 
       const bestCards = new Set(result.cards || []);
-      const sevenCards = [...holeCards, ...(hand.communityCards || [])];
+      const isWinner = winners.has(player.id);
       const reveal = document.createElement("div");
-      reveal.className = "showdown-reveal";
+      reveal.className = `showdown-reveal ${isWinner ? "is-winner" : ""}`;
       reveal.innerHTML = `
         <div class="showdown-hand-label">${result.hand}</div>
         <div class="showdown-card-row">
-          ${sevenCards.map((card) => renderMiniCard(card, bestCards)).join("")}
+          ${holeCards.map((card) => renderMiniCard(card, bestCards, isWinner)).join("")}
         </div>
       `;
 
       seat.appendChild(reveal);
     });
+
+    highlightBoardCards(hand);
   }
 
   window.renderGame = function renderGameWithShowdownReveal(game) {
