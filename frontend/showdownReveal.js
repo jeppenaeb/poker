@@ -10,8 +10,13 @@
 
   if (typeof originalRenderGame !== "function") return;
 
+  function ownPlayerIdFromGame(game) {
+    return Object.keys(game.hand?.holeCards || {})[0] || "";
+  }
+
   function orderedPlayersForPerspective(game) {
-    const currentIndex = game.tableSeats.indexOf(currentPlayerId);
+    const ownPlayerId = ownPlayerIdFromGame(game);
+    const currentIndex = game.tableSeats.indexOf(ownPlayerId);
     const orderedPlayerIds =
       currentIndex === -1
         ? game.tableSeats
