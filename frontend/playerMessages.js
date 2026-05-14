@@ -7,6 +7,10 @@
     return Object.keys(game.hand?.holeCards || {})[0] || "";
   }
 
+  function currentPlayerIdFromApp() {
+    return typeof currentPlayerId === "undefined" ? "" : currentPlayerId;
+  }
+
   function rankLabel(card) {
     const rank = card.slice(1);
     const labels = {
@@ -132,7 +136,7 @@
     renderLobby = (game) => {
       originalRenderLobby(game);
 
-      const currentPlayer = game.players.find((player) => player.id === currentPlayerId);
+      const currentPlayer = game.players.find((player) => player.id === currentPlayerIdFromApp());
       const isHost = Boolean(currentPlayer?.isHost);
       const hint = document.getElementById("tableHint");
 
@@ -142,6 +146,7 @@
           : "Host styrer bordplacering";
       }
     };
+    window.renderLobby = renderLobby;
   }
 
   if (typeof renderGame === "function") {
