@@ -12,6 +12,10 @@
 
   if (typeof originalRenderGame !== "function") return;
 
+  function ownPlayerIdFromGame(game) {
+    return Object.keys(game.hand?.holeCards || {})[0] || "";
+  }
+
   function chipClass(value) {
     return `chip-${value}`;
   }
@@ -95,7 +99,7 @@
       const button = document.createElement("button");
       button.type = "button";
       button.className = "chip-button";
-      button.title = `L\u00e6g ${value} til raise`;
+      button.title = `Læg ${value} til raise`;
       button.appendChild(makeChip(value));
       button.addEventListener("click", () => {
         setRaiseAmount(Number(raiseInput.value || 0) + value);
@@ -118,7 +122,8 @@
   }
 
   function orderedPlayersForPerspective(game) {
-    const currentIndex = game.tableSeats.indexOf(currentPlayerId);
+    const ownPlayerId = ownPlayerIdFromGame(game);
+    const currentIndex = game.tableSeats.indexOf(ownPlayerId);
     const orderedPlayerIds =
       currentIndex === -1
         ? game.tableSeats
