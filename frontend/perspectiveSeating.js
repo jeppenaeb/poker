@@ -30,6 +30,7 @@
 
       seat.style.display = "none";
       seat.innerHTML = "";
+      seat.dataset.playerId = "";
       seat.classList.remove("is-current", "is-you", "is-folded");
     }
   }
@@ -43,6 +44,7 @@
     ].filter(Boolean);
 
     seat.style.display = "";
+    seat.dataset.playerId = player.id;
     seat.classList.toggle("is-current", player.id === hand.currentPlayerId && !isFolded);
     seat.classList.toggle("is-you", player.id === ownPlayerId);
     seat.classList.toggle("is-folded", isFolded);
