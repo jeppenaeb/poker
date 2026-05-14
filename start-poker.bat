@@ -1,7 +1,10 @@
 @echo off
 cd /d "%~dp0"
 
-echo Stopping old poker server if it is already running...
+echo Closing old Node/poker server if it is already running...
+taskkill /IM node.exe /F >nul 2>nul
+
+echo Freeing port 3000 if it is still occupied...
 for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":3000" ^| findstr "LISTENING"') do (
   taskkill /F /PID %%a >nul 2>nul
 )
