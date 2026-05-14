@@ -1,5 +1,6 @@
 const SUITS = ["S", "H", "D", "C"];
 const RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
+const { compareEvaluations, evaluateBestHand } = require("./handEvaluator");
 
 function createDeck() {
   return SUITS.flatMap((suit) => RANKS.map((rank) => `${suit}${rank}`));
@@ -123,10 +124,123 @@ function awardPotToLastPlayer(game) {
   }
 
   game.hand.winnerPlayerId = winnerId;
+  game.hand.winnerPlayerIds = winnerId ? [winnerId] : [];
   game.hand.winningReason = "fold";
   game.hand.phase = "hand_complete";
   game.hand.currentPlayerId = null;
   game.hand.pot = 0;
+}
+
+function addContribution(hand, playerId, amount) {
+  hand.contributions[playerId] = (hand.contributions[playerId] || 0) + amount;
+}
+
+function evaluateShowdownPlayers(game) {
+  const hand = game.hand;
+
+  return eligiblePlayerIds(game).map((playerId) => {
+    const cards = [...(hand.holeCards[playerId] || []), ...hand.communityCards];
+    return {
+      playerId,
+      evaluation: evaluateBestHand(cards)
+    };
+  });
+}
+
+function bestPlayersForPot(showdownResults, eligibleWinnerIds) {
+  let best = null;
+  let winners = [];
+
+  showdownResults
+    .filter((result) => eligibleWinnerIds.includes(result.playerId))
+    .forEach((result) => {
+      const comparison = compareEvaluations(result.evaluation, best);
+      if (comparison > 0) {
+        best = result.evaluation;
+        winners = [result.playerId];
+      } else if (comparison === 0) {
+        winners.push(result.playerId);
+      }
+    });
+
+  return { best, winners };
+}
+
+function distributePot(game, amount, winnerIds) {
+  if (amount <= 0 || winnerIds.length === 0) return;
+
+  const share = Math.floor(amount / winnerIds.length);
+  let remainder = amount % winnerIds.length;
+  const orderedWinners = game.tableSeats.filter((playerId) => winnerIds.includes(playerId));
+
+  orderedWinners.forEach((playerId) => {
+    const player = game.players.find((item) => item.id === playerId);
+    if (!player) return;
+
+    player.stack += share + (remainder > 0 ? 1 : 0);
+    if (remainder > 0) remainder -= 1;
+  });
+}
+
+function buildSidePots(game) {
+  const hand = game.hand;
+  const playerIds = Object.keys(hand.contributions);
+  const levels = [...new Set(Object.values(hand.contributions).filter((amount) => amount > 0))].sort((a, b) => a - b);
+  const pots = [];
+  let previousLevel = 0;
+
+  levels.forEach((level) => {
+    const contributors = playerIds.filter((playerId) => hand.contributions[playerId] >= level);
+    const amount = (level - previousLevel) * contributors.length;
+
+    if (amount > 0) {
+      pots.push({
+        amount,
+        contributors,
+        eligibleWinnerIds: contributors.filter((playerId) => !hand.foldedPlayerIds.includes(playerId))
+      });
+    }
+
+    previousLevel = level;
+  });
+
+  return pots;
+}
+
+function settleShowdown(game) {
+  const hand = game.hand;
+  const showdownResults = evaluateShowdownPlayers(game);
+  const pots = buildSidePots(game);
+  const awardedPots = [];
+  const allWinnerIds = new Set();
+
+  pots.forEach((pot) => {
+    const { best, winners } = bestPlayersForPot(showdownResults, pot.eligibleWinnerIds);
+    distributePot(game, pot.amount, winners);
+    winners.forEach((playerId) => allWinnerIds.add(playerId));
+
+    awardedPots.push({
+      amount: pot.amount,
+      winnerPlayerIds: winners,
+      winningHand: best ? best.name : "-"
+    });
+  });
+
+  const primaryPot = awardedPots[0];
+
+  hand.phase = "hand_complete";
+  hand.currentPlayerId = null;
+  hand.winningReason = "showdown";
+  hand.winnerPlayerIds = [...allWinnerIds];
+  hand.winnerPlayerId = primaryPot?.winnerPlayerIds[0] || null;
+  hand.winningHand = primaryPot?.winningHand || "-";
+  hand.showdownResults = showdownResults.map((result) => ({
+    playerId: result.playerId,
+    hand: result.evaluation.name,
+    cards: result.evaluation.cards
+  }));
+  hand.awardedPots = awardedPots;
+  hand.pot = 0;
 }
 
 function isBettingRoundComplete(game) {
@@ -153,8 +267,7 @@ function advanceStreet(game) {
     hand.phase = "river";
     hand.communityCards.push(hand.deck.pop());
   } else if (hand.phase === "river") {
-    hand.phase = "showdown";
-    hand.currentPlayerId = null;
+    settleShowdown(game);
     return;
   }
 
@@ -209,6 +322,7 @@ function applyPlayerAction(game, { playerId, action, amount }) {
     const paid = payChips(player, betToMatch - playerBet);
     hand.bets[playerId] = playerBet + paid;
     hand.pot += paid;
+    addContribution(hand, playerId, paid);
     if (player.stack === 0) addUnique(hand.allInPlayerIds, playerId);
     addUnique(hand.actedPlayerIds, playerId);
   } else if (action === "raise") {
@@ -219,6 +333,7 @@ function applyPlayerAction(game, { playerId, action, amount }) {
     const paid = payChips(player, raiseTo - playerBet);
     hand.bets[playerId] = playerBet + paid;
     hand.pot += paid;
+    addContribution(hand, playerId, paid);
     if (player.stack === 0) addUnique(hand.allInPlayerIds, playerId);
     hand.actedPlayerIds = [playerId];
   } else if (action === "all_in") {
@@ -226,6 +341,7 @@ function applyPlayerAction(game, { playerId, action, amount }) {
     const paid = payChips(player, player.stack);
     hand.bets[playerId] = allInTo;
     hand.pot += paid;
+    addContribution(hand, playerId, paid);
     addUnique(hand.allInPlayerIds, playerId);
     hand.actedPlayerIds = allInTo > betToMatch ? [playerId] : [...new Set([...hand.actedPlayerIds, playerId])];
   } else {
@@ -267,6 +383,7 @@ function createFirstHand(game) {
     currentPlayerId: positions.firstToActPlayerId,
     pot: bets[positions.smallBlindPlayerId] + bets[positions.bigBlindPlayerId],
     bets,
+    contributions: { ...bets },
     actedPlayerIds: [],
     foldedPlayerIds: [],
     allInPlayerIds: []
