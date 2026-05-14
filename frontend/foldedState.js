@@ -24,27 +24,7 @@
     return values[rank] || 0;
   }
 
-  function rankName(value) {
-    const names = {
-      14: "esser",
-      13: "konger",
-      12: "damer",
-      11: "kn\u00e6gte",
-      10: "tiere",
-      9: "niere",
-      8: "ottere",
-      7: "syvere",
-      6: "seksere",
-      5: "femmere",
-      4: "firere",
-      3: "treere",
-      2: "toere"
-    };
-
-    return names[value] || "";
-  }
-
-  function highCardName(value) {
+  function singleRankName(value) {
     const names = {
       14: "es",
       13: "konge",
@@ -59,6 +39,26 @@
       4: "4",
       3: "3",
       2: "2"
+    };
+
+    return names[value] || "";
+  }
+
+  function madeRankName(value) {
+    const names = {
+      14: "esser",
+      13: "konger",
+      12: "damer",
+      11: "kn\u00e6gte",
+      10: "10ere",
+      9: "9ere",
+      8: "8ere",
+      7: "7ere",
+      6: "6ere",
+      5: "5ere",
+      4: "4ere",
+      3: "3ere",
+      2: "2ere"
     };
 
     return names[value] || "";
@@ -105,17 +105,17 @@
 
     if (straightFlush && flushValues.includes(14) && flushValues.includes(13)) return "Royal flush";
     if (straightFlush) return "Straight flush";
-    if (grouped[0]?.count === 4) return `Fire ens, ${rankName(grouped[0].value)}`;
+    if (grouped[0]?.count === 4) return `Fire ${madeRankName(grouped[0].value)}`;
     if (grouped[0]?.count === 3 && grouped.some((item, index) => index > 0 && item.count >= 2)) return "Fuldt hus";
     if (flushValues) return "Flush";
     if (straight) return "Straight";
-    if (grouped[0]?.count === 3) return `Tre ens, ${rankName(grouped[0].value)}`;
+    if (grouped[0]?.count === 3) return `Tre ${madeRankName(grouped[0].value)}`;
 
     const pairs = grouped.filter((item) => item.count === 2);
-    if (pairs.length >= 2) return `To par, ${rankName(pairs[0].value)} og ${rankName(pairs[1].value)}`;
-    if (pairs.length === 1) return `Par ${rankName(pairs[0].value)}`;
+    if (pairs.length >= 2) return `To par, ${singleRankName(pairs[0].value)} og ${singleRankName(pairs[1].value)}`;
+    if (pairs.length === 1) return `Par ${singleRankName(pairs[0].value)}`;
 
-    return `H\u00f8jt kort ${highCardName(Math.max(...values))}`;
+    return `H\u00f8jt kort ${singleRankName(Math.max(...values))}`;
   }
 
   function updateHandStrength(hand) {
