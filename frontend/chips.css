@@ -193,6 +193,89 @@
   pointer-events: none;
 }
 
+.table-chip-layer {
+  position: absolute;
+  inset: 8% 4% 31% 4%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.pot-chip-scatter {
+  position: absolute;
+  left: 50%;
+  top: 61%;
+  width: 96px;
+  height: 58px;
+  transform: translate(-50%, -50%);
+}
+
+.table-chip {
+  width: 27px;
+  height: 27px;
+  border-width: 1px;
+  font-size: 6px;
+}
+
+.table-chip.pot-table-chip {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: var(--chip-z, 0);
+  transform: translate(calc(-50% + var(--chip-x, 0px)), calc(-50% + var(--chip-y, 0px))) rotate(var(--chip-r, 0deg));
+}
+
+.player-bet-chips {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  min-height: 30px;
+  transform: translate(-50%, -50%);
+}
+
+.player-bet-chip-label {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 2px);
+  transform: translateX(-50%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(2, 6, 23, 0.72);
+  color: #f8fafc;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.bet-table-chip {
+  margin-left: -9px;
+  transform: translateY(calc((var(--bet-chip-i, 0) % 2) * -3px)) rotate(calc(var(--bet-chip-i, 0) * 12deg));
+}
+
+.bet-table-chip:first-of-type {
+  margin-left: 0;
+}
+
+.table-chip-more {
+  position: absolute;
+  right: -8px;
+  bottom: -6px;
+  border-radius: 999px;
+  background: rgba(2, 6, 23, 0.8);
+  color: #f8fafc;
+  padding: 2px 5px;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.player-bet-chips .table-chip-more {
+  position: static;
+  margin-left: 4px;
+}
+
 #nextHandButton {
   min-height: 42px;
   border-radius: 10px;
@@ -212,6 +295,26 @@
   .chip-preview {
     justify-content: center;
   }
+
+  .table-chip-layer {
+    inset: 10% 1% 34% 1%;
+  }
+
+  .pot-chip-scatter {
+    top: 63%;
+    transform: translate(-50%, -50%) scale(0.88);
+  }
+
+  .table-chip {
+    width: 24px;
+    height: 24px;
+    font-size: 5px;
+  }
+
+  .player-bet-chips {
+    min-width: 58px;
+    transform: translate(-50%, -50%) scale(0.88);
+  }
 }
 
 @media (max-width: 560px) {
@@ -224,5 +327,9 @@
     width: 32px;
     height: 32px;
     font-size: 8px;
+  }
+
+  .player-bet-chip-label {
+    font-size: 9px;
   }
 }
