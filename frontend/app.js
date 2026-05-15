@@ -86,7 +86,7 @@ function renderLobby(game) {
   } else if (full && isHost) {
     document.getElementById("lobbyStatus").textContent = `${joined} / ${game.maxPlayers} spillere er klar. Du kan starte spillet.`;
   } else if (full) {
-    document.getElementById("lobbyStatus").textContent = `${joined} / ${game.maxPlayers} spillere er klar. Venter på at host starter spillet.`;
+    document.getElementById("lobbyStatus").textContent = `${joined} / ${game.maxPlayers} spillere er klar. Afventer at game-hosten starter spillet.`;
   } else {
     document.getElementById("lobbyStatus").textContent = `${joined} / ${game.maxPlayers} spillere joinet. Lobbyen opdateres automatisk.`;
   }
@@ -129,7 +129,7 @@ function renderLobby(game) {
 
   document.getElementById("tableHint").textContent =
     isHost && game.status === "lobby"
-      ? "Drag spillere mellem pladserne"
+      ? "Træk spillerne mellem pladserne, for at ændre rækkefølgen"
       : "Host styrer bordplacering";
 
   document.getElementById("lobbyRules").innerHTML = `
