@@ -13,6 +13,10 @@ function randomPlayerColor(existingPlayers = []) {
   return palette[Math.floor(Math.random() * palette.length)];
 }
 
+function randomText(options) {
+  return options[Math.floor(Math.random() * options.length)];
+}
+
 function createPlayer(name, isHost = false, color = randomPlayerColor()) {
   return {
     id: crypto.randomUUID(),
@@ -42,11 +46,13 @@ function setEphemeralMessage(player, message) {
 }
 
 function actionMessage(action, amount) {
-  if (action === "check") return "Jeg checker";
-  if (action === "call") return "Jeg caller";
-  if (action === "fold") return "Jeg folder";
-  if (action === "all_in") return "Jeg er all-in";
-  if (action === "raise") return `Jeg raiser med ${Number(amount || 0)}`;
+  const raiseAmount = Number(amount || 0);
+
+  if (action === "check") return randomText(["Jeg checker.", "Jeg checker også."]);
+  if (action === "call") return randomText(["Jeg caller.", "Jeg caller også.", "Jeg er med."]);
+  if (action === "fold") return randomText(["Jeg folder.", "Jeg smider kortene."]);
+  if (action === "all_in") return randomText(["Jeg er all-in.", "All-in."]);
+  if (action === "raise") return randomText([`Jeg raiser med ${raiseAmount}.`, `Jeg hæver til ${raiseAmount}.`]);
   return "";
 }
 
@@ -259,7 +265,7 @@ module.exports = {
   getGame,
   getGameForPlayer,
   nextHand,
-  playerAction,
+ playerAction,
   setPlayerMessage,
   startGame,
   updateSeats
