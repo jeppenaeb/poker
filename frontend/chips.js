@@ -244,7 +244,9 @@
       const { chips, rest } = amountAsChips(amount, stackValues, 8);
       chips.forEach((value, chipIndex) => {
         const chip = makeChip(value, "table-chip bet-table-chip");
-        chip.style.setProperty("--bet-chip-i", String(chipIndex));
+        if (chipIndex === 0) chip.classList.add("is-first-bet-chip");
+        chip.style.setProperty("--bet-chip-y", `${chipIndex % 2 === 0 ? 0 : -3}px`);
+        chip.style.setProperty("--bet-chip-r", `${chipIndex * 12}deg`);
         bet.appendChild(chip);
       });
       addRemainder(bet, rest);
