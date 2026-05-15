@@ -151,6 +151,33 @@
     }, null);
   }
 
+  function scoringCards(evaluation) {
+    if (!evaluation) return new Set();
+
+    const cards = evaluation.cards || [];
+    const rankMatches = (...ranks) => cards.filter((card) => ranks.includes(rankValue(card)));
+
+    switch (evaluation.category) {
+      case 0:
+        return new Set(rankMatches(evaluation.tiebreakers[0]).slice(0, 1));
+      case 1:
+        return new Set(rankMatches(evaluation.tiebreakers[0]).slice(0, 2));
+      case 2:
+        return new Set(rankMatches(evaluation.tiebreakers[0], evaluation.tiebreakers[1]).slice(0, 4));
+      case 3:
+        return new Set(rankMatches(evaluation.tiebreakers[0]).slice(0, 3));
+      case 7:
+        return new Set(rankMatches(evaluation.tiebreakers[0]).slice(0, 4));
+      case 4:
+      case 5:
+      case 6:
+      case 8:
+        return new Set(cards);
+      default:
+        return new Set(cards);
+    }
+  }
+
   function cardText(card) {
     const suit = card.slice(0, 1);
     const rank = card.slice(1);
@@ -192,7 +219,7 @@
   function bestCardsForPlayer(hand, playerId) {
     const holeCards = hand.revealedHoleCards?.[playerId] || [];
     const evaluated = evaluateBestCards([...holeCards, ...(hand.communityCards || [])]);
-    return new Set(evaluated?.cards || []);
+    return scoringCards(evaluated);
   }
 
   function winningBestCards(hand) {
