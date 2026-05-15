@@ -315,6 +315,17 @@ function payChips(player, amount) {
   return paid;
 }
 
+function logAction(hand, playerId, action, amount) {
+  if (!Array.isArray(hand.actionLog)) hand.actionLog = [];
+
+  hand.actionLog.push({
+    playerId,
+    action,
+    amount: Number.isFinite(Number(amount)) ? Number(amount) : null,
+    phase: hand.phase
+  });
+}
+
 function applyPlayerAction(game, { playerId, action, amount }) {
   if (game.status !== "in_progress" || !game.hand) throw new Error("GAME_NOT_IN_PROGRESS");
 
@@ -327,6 +338,7 @@ function applyPlayerAction(game, { playerId, action, amount }) {
 
   const playerBet = hand.bets[playerId] || 0;
   const betToMatch = currentBet(hand);
+  let loggedAmount = amount;
 
   if (action === "fold") {
     addUnique(hand.foldedPlayerIds, playerId);
@@ -341,6 +353,7 @@ function applyPlayerAction(game, { playerId, action, amount }) {
     addContribution(hand, playerId, paid);
     if (player.stack === 0) addUnique(hand.allInPlayerIds, playerId);
     addUnique(hand.actedPlayerIds, playerId);
+    loggedAmount = hand.bets[playerId];
   } else if (action === "raise") {
     const raiseTo = Number(amount);
     if (!Number.isFinite(raiseTo) || raiseTo <= betToMatch) throw new Error("INVALID_RAISE");
@@ -352,6 +365,7 @@ function applyPlayerAction(game, { playerId, action, amount }) {
     addContribution(hand, playerId, paid);
     if (player.stack === 0) addUnique(hand.allInPlayerIds, playerId);
     hand.actedPlayerIds = [playerId];
+    loggedAmount = raiseTo;
   } else if (action === "all_in") {
     const allInTo = playerBet + player.stack;
     const paid = payChips(player, player.stack);
@@ -360,10 +374,12 @@ function applyPlayerAction(game, { playerId, action, amount }) {
     addContribution(hand, playerId, paid);
     addUnique(hand.allInPlayerIds, playerId);
     hand.actedPlayerIds = allInTo > betToMatch ? [playerId] : [...new Set([...hand.actedPlayerIds, playerId])];
+    loggedAmount = allInTo;
   } else {
     throw new Error("UNKNOWN_ACTION");
   }
 
+  logAction(hand, playerId, action, loggedAmount);
   settleAfterAction(game);
   return game;
 }
@@ -402,7 +418,8 @@ function createHand(game, dealerPlayerId, handNumber) {
     contributions: { ...bets },
     actedPlayerIds: [],
     foldedPlayerIds: [],
-    allInPlayerIds: []
+    allInPlayerIds: [],
+    actionLog: []
   };
 
   return game;
