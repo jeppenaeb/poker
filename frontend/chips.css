@@ -251,10 +251,10 @@
 
 .bet-table-chip {
   margin-left: -9px;
-  transform: translateY(calc((var(--bet-chip-i, 0) % 2) * -3px)) rotate(calc(var(--bet-chip-i, 0) * 12deg));
+  transform: translateY(var(--bet-chip-y, 0px)) rotate(var(--bet-chip-r, 0deg));
 }
 
-.bet-table-chip:first-of-type {
+.bet-table-chip.is-first-bet-chip {
   margin-left: 0;
 }
 
