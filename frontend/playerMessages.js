@@ -4,12 +4,12 @@
   let latestGame = null;
   let latestOwnPlayerId = "";
 
-  function ownPlayerIdFromGame(game) {
-    return Object.keys(game.hand?.holeCards || {})[0] || "";
-  }
-
   function currentPlayerIdFromApp() {
     return typeof currentPlayerId === "undefined" ? "" : currentPlayerId;
+  }
+
+  function ownPlayerIdFromGame(game) {
+    return Object.keys(game.hand?.holeCards || {})[0] || currentPlayerIdFromApp();
   }
 
   function rankLabel(card) {
@@ -54,7 +54,7 @@
   }
 
   function seatForPlayer(playerId) {
-    return Array.from(document.querySelectorAll(".game-seat")).find((seat) => {
+    return Array.from(document.querySelectorAll(".game-seat, .seat")).find((seat) => {
       return seat.dataset.playerId === playerId && seat.style.display !== "none";
     });
   }
@@ -130,9 +130,13 @@
         throw new Error(data.error || "REQUEST_FAILED");
       }
 
-      window.renderGame(data.game);
+      if (data.game.status === "lobby" && typeof renderLobby === "function") {
+        renderLobby(data.game);
+      } else {
+        window.renderGame(data.game);
+      }
     } catch (error) {
-      const status = document.getElementById("gameStatus");
+      const status = document.getElementById(latestGame.status === "lobby" ? "lobbyStatus" : "gameStatus");
       if (status) status.textContent = `Kunne ikke sende besked: ${error.message}`;
     }
   }
@@ -194,6 +198,7 @@
       }
 
       renderCopyCodeButton(game, isHost);
+      renderPlayerMessages(game);
     };
     window.renderLobby = renderLobby;
   }
