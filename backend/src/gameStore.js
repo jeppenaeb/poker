@@ -45,6 +45,10 @@ function setEphemeralMessage(player, message) {
   player.messageAt = player.message ? new Date().toISOString() : null;
 }
 
+function playerName(game, playerId) {
+  return game.players.find((player) => player.id === playerId)?.name || "næste spiller";
+}
+
 function previousRoundActions(game) {
   const hand = game.hand;
   if (!hand) return [];
@@ -57,7 +61,37 @@ function hasPreviousAction(game, actions) {
   return previousRoundActions(game).some((entry) => wantedActions.includes(entry.action));
 }
 
-function actionMessage(game, action, amount) {
+function currentBet(hand) {
+  return Math.max(0, ...Object.values(hand?.bets || {}));
+}
+
+function isPlayerActionableBeforeAction(game, playerId) {
+  const hand = game.hand;
+  const player = game.players.find((item) => item.id === playerId);
+  return Boolean(
+    hand &&
+      player &&
+      player.status === "active" &&
+      player.stack > 0 &&
+      !hand.foldedPlayerIds.includes(playerId) &&
+      !hand.allInPlayerIds.includes(playerId)
+  );
+}
+
+function isFinalCallBeforeNewCards(game, playerId) {
+  const hand = game.hand;
+  if (!hand) return false;
+
+  const betToMatch = currentBet(hand);
+  const projectedActedPlayerIds = new Set([...(hand.actedPlayerIds || []), playerId]);
+
+  return game.tableSeats.filter((seatPlayerId) => isPlayerActionableBeforeAction(game, seatPlayerId)).every((seatPlayerId) => {
+    const projectedBet = seatPlayerId === playerId ? betToMatch : hand.bets[seatPlayerId] || 0;
+    return projectedActedPlayerIds.has(seatPlayerId) && projectedBet === betToMatch;
+  });
+}
+
+function actionMessage(game, action, amount, playerId) {
   const raiseAmount = Number(amount || 0);
 
   if (action === "check") {
@@ -67,6 +101,8 @@ function actionMessage(game, action, amount) {
   }
 
   if (action === "call") {
+    if (isFinalCallBeforeNewCards(game, playerId)) return "Jeg caller. Lad os se nogle kort.";
+
     const options = ["Jeg caller.", "Jeg er med.", "Jeg vil gerne se."];
     if (hasPreviousAction(game, "call")) options.push("Jeg caller også.");
     return randomText(options);
@@ -224,7 +260,15 @@ function startGame({ code, playerId }) {
   game.status = "in_progress";
   game.startedAt = new Date().toISOString();
 
-  return createFirstHand(game);
+  const startedGame = createFirstHand(game);
+  const dealer = startedGame.players.find((item) => item.id === startedGame.hand.dealerPlayerId);
+  const starterName = playerName(startedGame, startedGame.hand.currentPlayerId);
+
+  if (dealer) {
+    setEphemeralMessage(dealer, `Jeg vandt lodtrækningen og er dealer i første runde. ${starterName}, du starter.`);
+  }
+
+  return startedGame;
 }
 
 function updateSeats({ code, playerId, tableSeats }) {
@@ -263,7 +307,7 @@ function playerAction({ code, playerId, action, amount }) {
   if (!game) throw new Error("GAME_NOT_FOUND");
 
   const player = game.players.find((item) => item.id === playerId);
-  const message = actionMessage(game, action, amount);
+  const message = actionMessage(game, action, amount, playerId);
   const updatedGame = applyPlayerAction(game, { playerId, action, amount });
 
   if (player) {
