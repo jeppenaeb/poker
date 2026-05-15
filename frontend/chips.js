@@ -9,6 +9,24 @@
     5: [3, 4, 5, 1, 2],
     6: [3, 4, 5, 0, 1, 2]
   };
+  const betPositions = {
+    0: { x: 50, y: 27 },
+    1: { x: 70, y: 36 },
+    2: { x: 70, y: 54 },
+    3: { x: 50, y: 62 },
+    4: { x: 30, y: 54 },
+    5: { x: 30, y: 36 }
+  };
+  const potScatter = [
+    { x: -22, y: -8, r: -12 },
+    { x: 0, y: -13, r: 8 },
+    { x: 22, y: -7, r: 17 },
+    { x: -12, y: 10, r: 12 },
+    { x: 13, y: 11, r: -9 },
+    { x: 34, y: 8, r: 6 },
+    { x: -32, y: 8, r: -5 },
+    { x: 0, y: 18, r: 15 }
+  ];
 
   if (typeof originalRenderGame !== "function") return;
 
@@ -155,9 +173,89 @@
     });
   }
 
+  function makeTableChip(value, index, type) {
+    const chip = makeChip(value, `table-chip ${type}`);
+    const scatter = potScatter[index % potScatter.length];
+    chip.style.setProperty("--chip-x", `${scatter.x}px`);
+    chip.style.setProperty("--chip-y", `${scatter.y}px`);
+    chip.style.setProperty("--chip-r", `${scatter.r}deg`);
+    chip.style.setProperty("--chip-z", String(index));
+    return chip;
+  }
+
+  function addRemainder(container, rest) {
+    if (rest <= 0) return;
+    const more = document.createElement("span");
+    more.className = "table-chip-more";
+    more.textContent = `+${rest}`;
+    container.appendChild(more);
+  }
+
+  function renderPotChips(game) {
+    const hand = game.hand;
+    const table = document.querySelector(".game-table");
+    if (!table || !hand) return;
+
+    document.querySelectorAll(".table-chip-layer").forEach((item) => item.remove());
+
+    const layer = document.createElement("div");
+    layer.className = "table-chip-layer";
+
+    const potAmount = Math.max(0, Number(hand.pot || 0));
+    if (potAmount > 0) {
+      const pot = document.createElement("div");
+      pot.className = "pot-chip-scatter";
+      pot.setAttribute("aria-label", `Pulje ${potAmount}`);
+
+      const { chips, rest } = amountAsChips(potAmount, stackValues, 14);
+      chips.forEach((value, index) => pot.appendChild(makeTableChip(value, index, "pot-table-chip")));
+      addRemainder(pot, rest);
+      layer.appendChild(pot);
+    }
+
+    renderBetChips(game, layer);
+    table.appendChild(layer);
+  }
+
+  function renderBetChips(game, layer) {
+    const hand = game.hand;
+    const orderedPlayers = orderedPlayersForPerspective(game);
+    const visualSlots = visualSlotsByPlayerCount[orderedPlayers.length] || visualSlotsByPlayerCount[6];
+
+    orderedPlayers.forEach((player, index) => {
+      const amount = Number(hand.bets?.[player.id] || 0);
+      if (amount <= 0) return;
+
+      const visualSlot = visualSlots[index];
+      const position = betPositions[visualSlot];
+      if (!position) return;
+
+      const bet = document.createElement("div");
+      bet.className = `player-bet-chips player-bet-slot-${visualSlot}`;
+      bet.style.left = `${position.x}%`;
+      bet.style.top = `${position.y}%`;
+      bet.setAttribute("aria-label", `${player.name} har bettet ${amount}`);
+
+      const label = document.createElement("span");
+      label.className = "player-bet-chip-label";
+      label.textContent = amount;
+      bet.appendChild(label);
+
+      const { chips, rest } = amountAsChips(amount, stackValues, 8);
+      chips.forEach((value, chipIndex) => {
+        const chip = makeChip(value, "table-chip bet-table-chip");
+        chip.style.setProperty("--bet-chip-i", String(chipIndex));
+        bet.appendChild(chip);
+      });
+      addRemainder(bet, rest);
+      layer.appendChild(bet);
+    });
+  }
+
   window.renderGame = function renderGameWithChips(game) {
     originalRenderGame(game);
     enhanceChipControls();
     decorateStackChips(game);
+    renderPotChips(game);
   };
 })();
