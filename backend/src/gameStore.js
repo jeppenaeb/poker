@@ -51,8 +51,8 @@ function actionMessage(action, amount) {
   if (action === "check") return randomText(["Jeg checker.", "Jeg checker også."]);
   if (action === "call") return randomText(["Jeg caller.", "Jeg caller også.", "Jeg er med."]);
   if (action === "fold") return randomText(["Jeg folder.", "Jeg smider kortene."]);
-  if (action === "all_in") return randomText(["Jeg er all-in.", "All-in."]);
-  if (action === "raise") return randomText([`Jeg raiser med ${raiseAmount}.`, `Jeg hæver til ${raiseAmount}.`]);
+  if (action === "all_in") return randomText(["Jeg er all-in.", "Jeg er med. Action time!"]);
+  if (action === "raise") return randomText([`Jeg raiser til ${raiseAmount}.`, `Jeg re-raiser til ${raiseAmount}.`]);
   return "";
 }
 
@@ -265,7 +265,7 @@ module.exports = {
   getGame,
   getGameForPlayer,
   nextHand,
- playerAction,
+  playerAction,
   setPlayerMessage,
   startGame,
   updateSeats
