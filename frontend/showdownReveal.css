@@ -55,7 +55,19 @@
   color: #dc2626;
 }
 
-.showdown-mini-card.is-best,
+.showdown-mini-card.is-best {
+  border-color: #22c55e;
+  border-width: 2px;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.42);
+  opacity: 1;
+  filter: none;
+}
+
+.showdown-mini-card.is-neutral {
+  opacity: 0.48;
+  filter: grayscale(0.45);
+}
+
 .card.showdown-board-best {
   border-color: #86efac;
   box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.34);
