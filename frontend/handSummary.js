@@ -21,54 +21,62 @@
     return Object.values(game.hand?.contributions || {}).reduce((sum, amount) => sum + Number(amount || 0), 0);
   }
 
-  function summarizePot(game, pot, index, totalPots) {
+  function awardedPotsForGame(game) {
+    const hand = game.hand;
+    return hand.awardedPots && hand.awardedPots.length > 0
+      ? hand.awardedPots
+      : [
+          {
+            amount: fallbackPot(game),
+            winnerPlayerIds: hand.winnerPlayerIds || (hand.winnerPlayerId ? [hand.winnerPlayerId] : []),
+            winningHand: hand.winningHand || ""
+          }
+        ];
+  }
+
+  function summarizePot(game, pot) {
     const winnerNames = (pot.winnerPlayerIds || []).map((playerId) => playerName(game, playerId));
     const winners = joinNames(winnerNames);
     const amount = Number(pot.amount || 0);
-    const potName = totalPots > 1 ? (index === 0 ? "hovedpuljen" : "sidepuljen") : "puljen";
     const handText = pot.winningHand ? ` med ${pot.winningHand}` : "";
 
     if (game.hand.winningReason === "fold") {
-      return `${winners} vinder ${potName} på ${amount}, fordi alle andre foldede.`;
+      return `${winners} vinder ${amount}, fordi alle andre foldede.`;
     }
 
     if (winnerNames.length > 1) {
-      return `${winners} deler ${potName} på ${amount}${handText}.`;
+      return `${winners} deler ${amount}${handText}.`;
     }
 
-    return `${winners} vinder ${potName} på ${amount}${handText}.`;
+    return `${winners} vinder ${amount}${handText}.`;
+  }
+
+  function tableResultSummary(game) {
+    const hand = game.hand;
+    if (!hand || hand.phase !== "hand_complete") return "";
+
+    return awardedPotsForGame(game).map((pot) => summarizePot(game, pot)).join(" ");
   }
 
   function handCompleteSummary(game) {
     const hand = game.hand;
     if (!hand || hand.phase !== "hand_complete") return "";
 
-    const awardedPots =
-      hand.awardedPots && hand.awardedPots.length > 0
-        ? hand.awardedPots
-        : [
-            {
-              amount: fallbackPot(game),
-              winnerPlayerIds: hand.winnerPlayerIds || (hand.winnerPlayerId ? [hand.winnerPlayerId] : []),
-              winningHand: hand.winningHand || ""
-            }
-          ];
-
-    const summaries = awardedPots.map((pot, index) => summarizePot(game, pot, index, awardedPots.length));
-    return `Hånden er færdigspillet. ${summaries.join(" ")}`;
+    return `Hånden er færdigspillet. ${tableResultSummary(game)}`;
   }
 
   function applyHandSummary(game) {
     const hand = game.hand;
     if (!hand || hand.phase !== "hand_complete") return;
 
+    const tableSummary = tableResultSummary(game);
     const summary = handCompleteSummary(game);
     const streetLabel = document.getElementById("streetLabel");
     const gameStatus = document.getElementById("gameStatus");
     const potBox = document.getElementById("potBox");
     const totalPot = potValue(hand) || fallbackPot(game);
 
-    if (streetLabel) streetLabel.textContent = "Hånden er færdigspillet";
+    if (streetLabel) streetLabel.textContent = tableSummary;
     if (gameStatus) gameStatus.textContent = summary;
     if (potBox) potBox.textContent = `Pulje: ${totalPot}`;
   }
