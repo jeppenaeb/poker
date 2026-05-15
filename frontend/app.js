@@ -436,13 +436,14 @@ function renderGame(game) {
   }
 
   const ownCards = hand.holeCards[currentPlayerId] || [];
+  const dealerName = game.players.find((player) => player.id === hand.dealerPlayerId)?.name || "-";
   document.getElementById("holeCards").innerHTML = renderCards(ownCards);
   document.getElementById("handStrength").textContent = `Din hånd: ${evaluateHand([...ownCards, ...hand.communityCards])}`;
   document.getElementById("gameRules").innerHTML = `
-    <div class="rule-box"><span>Blinds</span><strong>${game.blinds.small}/${game.blinds.big}</strong></div>
-    <div class="rule-box"><span>Hand</span><strong>#${hand.number}</strong></div>
-    <div class="rule-box"><span>Dealer</span><strong>${game.players.find((player) => player.id === hand.dealerPlayerId)?.name || "-"}</strong></div>
-    <div class="rule-box"><span>Din stack</span><strong>${currentPlayer ? currentPlayer.stack : 0}</strong></div>
+    <span><strong>Blinds</strong> ${game.blinds.small}/${game.blinds.big}</span>
+    <span><strong>Dealer</strong> ${dealerName}</span>
+    <span><strong>Hånd</strong> #${hand.number}</span>
+    <span><strong>Stack</strong> ${currentPlayer ? currentPlayer.stack : 0}</span>
   `;
 
   renderActionPanel(game);
@@ -451,10 +452,12 @@ function renderGame(game) {
 function renderActionPanel(game) {
   const hand = game.hand;
   const panel = document.getElementById("actionPanel");
+  const dock = document.getElementById("playerDock");
   const isYourTurn = hand.currentPlayerId === currentPlayerId;
   const handFinished = ["showdown", "hand_complete"].includes(hand.phase);
 
   panel.hidden = !isYourTurn || handFinished;
+  dock?.classList.toggle("is-active-turn", isYourTurn && !handFinished);
 
   if (panel.hidden) return;
 
