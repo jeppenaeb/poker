@@ -172,8 +172,30 @@
     return evaluation;
   }
 
+  function partialHandName(cards) {
+    if (!Array.isArray(cards) || cards.length === 0) return "-";
+
+    const values = cards.map(rankValue).filter(Boolean).sort((first, second) => second - first);
+    const counts = values.reduce((acc, value) => {
+      acc[value] = (acc[value] || 0) + 1;
+      return acc;
+    }, {});
+    const groups = Object.entries(counts)
+      .map(([value, count]) => ({ value: Number(value), count }))
+      .sort((first, second) => second.count - first.count || second.value - first.value);
+
+    if (groups[0]?.count === 4) return `Fire ${madeRankName(groups[0].value)}`;
+    if (groups[0]?.count === 3) return `Tre ${madeRankName(groups[0].value)}`;
+
+    const pairs = groups.filter((group) => group.count === 2);
+    if (pairs.length >= 2) return `To par, ${singleRankName(pairs[0].value)} og ${singleRankName(pairs[1].value)}`;
+    if (pairs.length === 1) return `Par ${singleRankName(pairs[0].value)}`;
+
+    return `Højt kort ${singleRankName(values[0])}`;
+  }
+
   function bestHandName(cards) {
-    if (!Array.isArray(cards) || cards.length < 5) return "-";
+    if (!Array.isArray(cards) || cards.length < 5) return partialHandName(cards);
 
     const best = combinations(cards, 5).reduce((currentBest, candidate) => {
       const evaluation = evaluateFiveCards(candidate);
