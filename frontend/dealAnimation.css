@@ -1,0 +1,69 @@
+.game-seat {
+  overflow: visible;
+}
+
+.dealt-hole-cards {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 5px);
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.seat-hole-card-back {
+  width: 26px;
+  height: 36px;
+  border-radius: 5px;
+  border: 1px solid #93c5fd;
+  background:
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.18) 0 18%, transparent 19%),
+    repeating-linear-gradient(135deg, #1d4ed8 0 7px, #1e40af 7px 14px);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.14),
+    0 4px 8px rgba(0, 0, 0, 0.26);
+}
+
+.seat-hole-card-back.is-dealt-now {
+  animation: dealCardPop 220ms ease-out;
+}
+
+.game-seat.is-folded .dealt-hole-cards {
+  opacity: 0.18;
+  filter: grayscale(1);
+}
+
+.player-dock.is-dealing-hand {
+  opacity: 0.82;
+}
+
+.player-dock.is-dealing-hand .action-panel {
+  display: none;
+}
+
+@keyframes dealCardPop {
+  from {
+    opacity: 0;
+    transform: translateY(-18px) scale(0.86) rotate(-7deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+}
+
+@media (max-width: 760px) {
+  .seat-hole-card-back {
+    width: 22px;
+    height: 31px;
+  }
+
+  .dealt-hole-cards {
+    top: calc(100% + 4px);
+    gap: 3px;
+  }
+}
