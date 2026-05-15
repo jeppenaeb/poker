@@ -22,6 +22,11 @@
   box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.16), 0 8px 18px rgba(0, 0, 0, 0.26);
 }
 
+.showdown-reveal.is-loser {
+  border-color: rgba(148, 163, 184, 0.22);
+  background: rgba(2, 6, 23, 0.42);
+}
+
 .showdown-hand-label {
   color: #dcfce7;
   font-size: 10px;
@@ -63,9 +68,13 @@
   filter: none;
 }
 
-.showdown-mini-card.is-neutral {
-  opacity: 0.48;
-  filter: grayscale(0.45);
+.showdown-mini-card.is-neutral,
+.showdown-mini-card.is-loser-card {
+  opacity: 0.28;
+  filter: grayscale(0.75);
+  border-color: rgba(203, 213, 225, 0.38);
+  background: #cbd5e1;
+  box-shadow: none;
 }
 
 .card.showdown-board-best {
@@ -74,8 +83,9 @@
 }
 
 .card.showdown-board-unused {
-  opacity: 0.58;
-  filter: grayscale(0.35);
+  opacity: 0.42;
+  filter: grayscale(0.55);
+  box-shadow: none;
 }
 
 .game-seat-a .showdown-reveal {
