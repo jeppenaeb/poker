@@ -73,9 +73,11 @@
   background: #E8E4DA;
   color: #111111;
   padding: 7px 11px;
+  font-family: "Trebuchet MS", "Avenir Next", "Segoe UI", sans-serif;
   font-size: 12px;
-  font-weight: 800;
-  line-height: 1.2;
+  font-weight: 900;
+  letter-spacing: 0.1px;
+  line-height: 1.22;
   text-align: center;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
   overflow-wrap: anywhere;
