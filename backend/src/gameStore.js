@@ -36,8 +36,8 @@ function sanitizeName(name) {
   return String(name || "").trim().slice(0, 12);
 }
 
-function sanitizeMessage(message) {
-  return String(message || "").trim().slice(0, 50);
+function sanitizeMessage(message, maxLength = 120) {
+  return String(message || "").trim().slice(0, maxLength);
 }
 
 function setEphemeralMessage(player, message) {
@@ -80,7 +80,7 @@ function isPlayerActionableBeforeAction(game, playerId) {
 
 function isFinalCallBeforeNewCards(game, playerId) {
   const hand = game.hand;
-  if (!hand) return false;
+  if (!hand || hand.phase === "river") return false;
 
   const betToMatch = currentBet(hand);
   const projectedActedPlayerIds = new Set([...(hand.actedPlayerIds || []), playerId]);
@@ -325,7 +325,7 @@ function setPlayerMessage({ code, playerId, message }) {
   const player = game.players.find((item) => item.id === playerId);
   if (!player) throw new Error("PLAYER_NOT_FOUND");
 
-  setEphemeralMessage(player, message);
+  setEphemeralMessage(player, sanitizeMessage(message, 50));
   return game;
 }
 
