@@ -198,7 +198,7 @@
     const isRed = suit === "H" || suit === "D";
     const isBest = isWinner && bestCards.has(card);
     return `
-      <span class="showdown-mini-card ${isRed ? "is-red" : ""} ${isBest ? "is-best" : "is-neutral"}">
+      <span class="showdown-mini-card ${isRed ? "is-red" : ""} ${isBest ? "is-best" : "is-neutral"} ${isWinner ? "is-winner-card" : "is-loser-card"}">
         ${cardText(card)}
       </span>
     `;
@@ -269,9 +269,9 @@
       const bestCards = bestCardsForPlayer(hand, player.id);
       const isWinner = winners.has(player.id);
       const reveal = document.createElement("div");
-      reveal.className = `showdown-reveal ${isWinner ? "is-winner" : ""}`;
+      reveal.className = `showdown-reveal ${isWinner ? "is-winner" : "is-loser"}`;
       reveal.innerHTML = `
-        <div class="showdown-hand-label">${result.hand}</div>
+        ${isWinner ? `<div class="showdown-hand-label">${result.hand}</div>` : ""}
         <div class="showdown-card-row">
           ${holeCards.map((card) => renderMiniCard(card, bestCards, isWinner)).join("")}
         </div>
