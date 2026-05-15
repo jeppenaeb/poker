@@ -36,6 +36,20 @@ function sanitizeMessage(message) {
   return String(message || "").trim().slice(0, 50);
 }
 
+function setEphemeralMessage(player, message) {
+  player.message = sanitizeMessage(message);
+  player.messageAt = player.message ? new Date().toISOString() : null;
+}
+
+function actionMessage(action, amount) {
+  if (action === "check") return "Jeg checker";
+  if (action === "call") return "Jeg caller";
+  if (action === "fold") return "Jeg folder";
+  if (action === "all_in") return "Jeg er all-in";
+  if (action === "raise") return `Jeg raiser med ${Number(amount || 0)}`;
+  return "";
+}
+
 function hideExpiredMessages(game) {
   const now = Date.now();
 
@@ -205,7 +219,14 @@ function playerAction({ code, playerId, action, amount }) {
 
   if (!game) throw new Error("GAME_NOT_FOUND");
 
-  return applyPlayerAction(game, { playerId, action, amount });
+  const player = game.players.find((item) => item.id === playerId);
+  const updatedGame = applyPlayerAction(game, { playerId, action, amount });
+
+  if (player) {
+    setEphemeralMessage(player, actionMessage(action, amount));
+  }
+
+  return updatedGame;
 }
 
 function setPlayerMessage({ code, playerId, message }) {
@@ -216,8 +237,7 @@ function setPlayerMessage({ code, playerId, message }) {
   const player = game.players.find((item) => item.id === playerId);
   if (!player) throw new Error("PLAYER_NOT_FOUND");
 
-  player.message = sanitizeMessage(message);
-  player.messageAt = player.message ? new Date().toISOString() : null;
+  setEphemeralMessage(player, message);
   return game;
 }
 
