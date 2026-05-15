@@ -153,7 +153,7 @@
       </section>
 
       <section class="view" id="gameView">
-        <header class="screen-header lobby-header">
+        <header class="screen-header lobby-header compact-header">
           <div>
             <p class="eyebrow">Spil</p>
             <h2 id="gameTitle">Poker</h2>
@@ -163,7 +163,7 @@
 
         <div class="status-strip" id="gameStatus">Henter spil...</div>
 
-        <section class="panel table-panel">
+        <section class="panel table-panel game-surface-panel">
           <div class="game-table">
             <div class="board-center">
               <div class="street-label" id="streetLabel">Preflop</div>
@@ -176,31 +176,35 @@
             <div class="game-seat game-seat-d" id="gameSeat3"></div>
             <div class="game-seat game-seat-e" id="gameSeat4"></div>
             <div class="game-seat game-seat-f" id="gameSeat5"></div>
+
+            <div class="player-dock" id="playerDock">
+              <div class="own-hand-compact">
+                <div class="own-card-line">
+                  <span class="dock-label">Dine kort</span>
+                  <div class="hole-card-row" id="holeCards"></div>
+                </div>
+                <div class="hand-strength" id="handStrength">Din hånd: -</div>
+              </div>
+
+              <div class="action-panel" id="actionPanel" hidden>
+                <div class="action-row">
+                  <button class="danger-action" type="button" data-action="fold">Fold</button>
+                  <button class="secondary-action" type="button" data-action="check">Check</button>
+                  <button class="secondary-action" type="button" data-action="call">Call</button>
+                  <button class="primary-action" type="button" data-action="raise">Raise</button>
+                  <button class="warning-action" type="button" data-action="all_in">All-in</button>
+                </div>
+                <label class="raise-input-row">
+                  <span>Raise til</span>
+                  <input id="raiseAmount" type="number" min="20" step="10" value="40" />
+                </label>
+                <p class="message" id="actionMessage"></p>
+              </div>
+            </div>
           </div>
         </section>
 
-        <section class="panel hand-panel">
-          <div>
-            <p class="eyebrow">Dine kort</p>
-            <div class="hole-card-row" id="holeCards"></div>
-            <div class="hand-strength" id="handStrength">Din hånd: -</div>
-          </div>
-          <div class="rule-grid" id="gameRules"></div>
-          <div class="action-panel" id="actionPanel" hidden>
-            <div class="action-row">
-              <button class="danger-action" type="button" data-action="fold">Fold</button>
-              <button class="secondary-action" type="button" data-action="check">Check</button>
-              <button class="secondary-action" type="button" data-action="call">Call</button>
-              <button class="primary-action" type="button" data-action="raise">Raise</button>
-              <button class="warning-action" type="button" data-action="all_in">All-in</button>
-            </div>
-            <label>
-              Raise til
-              <input id="raiseAmount" type="number" min="20" step="10" value="40" />
-            </label>
-            <p class="message" id="actionMessage"></p>
-          </div>
-        </section>
+        <section class="game-info-line" id="gameRules"></section>
       </section>
     </main>
 
