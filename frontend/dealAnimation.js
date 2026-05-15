@@ -82,19 +82,24 @@
     addSeatCards(game, counts);
   }
 
+  function setDealingDockState(isDealing) {
+    const dock = document.getElementById("playerDock");
+    dock?.classList.toggle("is-dealing-hand", isDealing);
+  }
+
   function hidePlayerActionsWhileDealing() {
     const panel = document.getElementById("actionPanel");
-    const dock = document.getElementById("playerDock");
     const status = document.getElementById("gameStatus");
 
     if (panel) panel.hidden = true;
-    dock?.classList.add("is-dealing-hand");
+    setDealingDockState(true);
     if (status) status.textContent = "Dealer kort...";
   }
 
   function finishDeal(key) {
     completedDeals.add(key);
     dealStates.delete(key);
+    setDealingDockState(false);
 
     if (latestGame && handKey(latestGame) === key) {
       window.renderGame(latestGame);
@@ -145,6 +150,7 @@
     clearOtherDealTimers(key);
 
     if (!isActiveHand(hand)) {
+      setDealingDockState(false);
       removeSeatCards();
       return;
     }
@@ -162,6 +168,7 @@
     }
 
     completedDeals.add(key);
+    setDealingDockState(false);
     showAllSeatCards(game);
   }
 
