@@ -1,5 +1,6 @@
 (function () {
   const API_BASE = "/poker/api";
+  const MESSAGE_VISIBLE_MS = 5000;
   let latestGame = null;
   let latestOwnPlayerId = "";
 
@@ -71,12 +72,17 @@
     seat.appendChild(button);
   }
 
-  function addMessageText(seat, text) {
-    if (!text) return;
+  function isFreshMessage(player) {
+    if (!player.message || !player.messageAt) return false;
+    return Date.now() - new Date(player.messageAt).getTime() <= MESSAGE_VISIBLE_MS;
+  }
+
+  function addMessageText(seat, player) {
+    if (!isFreshMessage(player)) return;
 
     const bubble = document.createElement("div");
     bubble.className = "player-chat-text";
-    bubble.textContent = text;
+    bubble.textContent = player.message;
     seat.appendChild(bubble);
   }
 
@@ -94,7 +100,7 @@
         addMessageButton(seat);
       }
 
-      addMessageText(seat, player.message || "");
+      addMessageText(seat, player);
     });
   }
 
