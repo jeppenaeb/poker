@@ -1,24 +1,25 @@
 .chip-bet-panel {
   display: grid;
-  gap: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  border-radius: 14px;
-  background: rgba(15, 23, 42, 0.72);
-  padding: 12px;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.58);
+  padding: 8px;
 }
 
 .chip-bet-total {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  display: grid;
+  gap: 2px;
   color: #cbd5e1;
-  font-size: 13px;
+  font-size: 11px;
+  line-height: 1.1;
 }
 
 .chip-bet-total strong {
   color: #f8fafc;
-  font-size: 24px;
+  font-size: 22px;
 }
 
 .chip-preview,
@@ -26,35 +27,36 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 5px;
   flex-wrap: wrap;
 }
 
 .chip-button-row {
-  gap: 10px;
+  justify-content: flex-end;
 }
 
 .chip-button,
 .chip-reset-button {
   border: 0;
-  border-radius: 12px;
+  border-radius: 10px;
   background: #1e293b;
   color: #f8fafc;
-  padding: 8px;
+  padding: 5px;
   font-weight: 900;
   cursor: pointer;
 }
 
 .chip-button {
-  min-width: 54px;
-  min-height: 54px;
+  min-width: 42px;
+  min-height: 42px;
   display: grid;
   place-items: center;
 }
 
 .chip-reset-button {
-  min-height: 42px;
-  padding: 8px 12px;
+  min-height: 34px;
+  padding: 6px 9px;
+  font-size: 12px;
 }
 
 .bet-chip,
@@ -74,15 +76,15 @@
 }
 
 .bet-chip {
-  width: 44px;
-  height: 44px;
-  font-size: 12px;
+  width: 34px;
+  height: 34px;
+  font-size: 10px;
 }
 
 .chip-button .bet-chip {
-  width: 38px;
-  height: 38px;
-  font-size: 11px;
+  width: 30px;
+  height: 30px;
+  font-size: 9px;
 }
 
 .stack-chip {
@@ -151,15 +153,36 @@
   pointer-events: none;
 }
 
+#nextHandButton {
+  min-height: 42px;
+  border-radius: 10px;
+  padding: 9px 12px;
+}
+
+#nextHandMessage {
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .chip-bet-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .chip-button-row,
+  .chip-preview {
+    justify-content: center;
+  }
+}
+
 @media (max-width: 560px) {
   .chip-button {
-    min-width: 48px;
-    min-height: 48px;
+    min-width: 38px;
+    min-height: 38px;
   }
 
   .bet-chip {
-    width: 40px;
-    height: 40px;
-    font-size: 11px;
+    width: 32px;
+    height: 32px;
+    font-size: 9px;
   }
 }
