@@ -151,30 +151,33 @@
     }, null);
   }
 
-  function scoringCards(evaluation) {
+  function cardsMatchingRanks(cards, ...ranks) {
+    return cards.filter((card) => ranks.includes(rankValue(card)));
+  }
+
+  function scoringCards(evaluation, allCards) {
     if (!evaluation) return new Set();
 
-    const cards = evaluation.cards || [];
-    const rankMatches = (...ranks) => cards.filter((card) => ranks.includes(rankValue(card)));
+    const bestFive = evaluation.cards || [];
 
     switch (evaluation.category) {
       case 0:
-        return new Set(rankMatches(evaluation.tiebreakers[0]).slice(0, 1));
+        return new Set(cardsMatchingRanks(allCards, evaluation.tiebreakers[0]).slice(0, 1));
       case 1:
-        return new Set(rankMatches(evaluation.tiebreakers[0]).slice(0, 2));
+        return new Set(cardsMatchingRanks(allCards, evaluation.tiebreakers[0]).slice(0, 2));
       case 2:
-        return new Set(rankMatches(evaluation.tiebreakers[0], evaluation.tiebreakers[1]).slice(0, 4));
+        return new Set(cardsMatchingRanks(allCards, evaluation.tiebreakers[0], evaluation.tiebreakers[1]).slice(0, 4));
       case 3:
-        return new Set(rankMatches(evaluation.tiebreakers[0]).slice(0, 3));
+        return new Set(cardsMatchingRanks(allCards, evaluation.tiebreakers[0]).slice(0, 3));
       case 7:
-        return new Set(rankMatches(evaluation.tiebreakers[0]).slice(0, 4));
+        return new Set(cardsMatchingRanks(allCards, evaluation.tiebreakers[0]).slice(0, 4));
       case 4:
       case 5:
       case 6:
       case 8:
-        return new Set(cards);
+        return new Set(bestFive);
       default:
-        return new Set(cards);
+        return new Set(bestFive);
     }
   }
 
@@ -218,8 +221,9 @@
 
   function bestCardsForPlayer(hand, playerId) {
     const holeCards = hand.revealedHoleCards?.[playerId] || [];
-    const evaluated = evaluateBestCards([...holeCards, ...(hand.communityCards || [])]);
-    return scoringCards(evaluated);
+    const allCards = [...holeCards, ...(hand.communityCards || [])];
+    const evaluated = evaluateBestCards(allCards);
+    return scoringCards(evaluated, allCards);
   }
 
   function winningBestCards(hand) {
