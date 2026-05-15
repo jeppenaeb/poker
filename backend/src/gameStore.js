@@ -91,6 +91,12 @@ function isFinalCallBeforeNewCards(game, playerId) {
   });
 }
 
+function finalCallMessage(game) {
+  return game.hand?.phase === "preflop"
+    ? "Jeg caller. Lad os se nogle kort."
+    : "Jeg caller. Lad os se et kort til.";
+}
+
 function actionMessage(game, action, amount, playerId) {
   const raiseAmount = Number(amount || 0);
 
@@ -101,7 +107,7 @@ function actionMessage(game, action, amount, playerId) {
   }
 
   if (action === "call") {
-    if (isFinalCallBeforeNewCards(game, playerId)) return "Jeg caller. Lad os se nogle kort.";
+    if (isFinalCallBeforeNewCards(game, playerId)) return finalCallMessage(game);
 
     const options = ["Jeg caller.", "Jeg er med.", "Jeg vil gerne se."];
     if (hasPreviousAction(game, "call")) options.push("Jeg caller også.");
