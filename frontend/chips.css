@@ -84,6 +84,7 @@
   font-weight: 950;
   color: #ffffff;
   line-height: 1;
+  letter-spacing: -0.2px;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.34);
 }
 
@@ -114,20 +115,20 @@
 .bet-chip {
   width: 34px;
   height: 34px;
-  font-size: 10px;
+  font-size: 8px;
 }
 
 .chip-button .bet-chip {
   width: 30px;
   height: 30px;
-  font-size: 9px;
+  font-size: 7px;
 }
 
 .stack-chip {
   width: 24px;
   height: 24px;
   border-width: 1px;
-  font-size: 8px;
+  font-size: 6px;
   margin-left: -7px;
 }
 
@@ -222,6 +223,6 @@
   .bet-chip {
     width: 32px;
     height: 32px;
-    font-size: 9px;
+    font-size: 8px;
   }
 }
