@@ -23,6 +23,7 @@ function createPlayer(name, isHost = false, color = randomPlayerColor()) {
     chipsBought: 1000,
     status: "active",
     message: "",
+    messageAt: null,
     color
   };
 }
@@ -33,6 +34,19 @@ function sanitizeName(name) {
 
 function sanitizeMessage(message) {
   return String(message || "").trim().slice(0, 50);
+}
+
+function hideExpiredMessages(game) {
+  const now = Date.now();
+
+  game.players.forEach((player) => {
+    if (!player.messageAt) return;
+
+    if (now - new Date(player.messageAt).getTime() > 5000) {
+      player.message = "";
+      player.messageAt = null;
+    }
+  });
 }
 
 function createGame({
@@ -101,7 +115,9 @@ function joinGame({ code, playerName }) {
 }
 
 function getGame(code) {
-  return games.get(normalizeGameCode(code));
+  const game = games.get(normalizeGameCode(code));
+  if (game) hideExpiredMessages(game);
+  return game;
 }
 
 function revealedShowdownHoleCards(game) {
@@ -201,6 +217,7 @@ function setPlayerMessage({ code, playerId, message }) {
   if (!player) throw new Error("PLAYER_NOT_FOUND");
 
   player.message = sanitizeMessage(message);
+  player.messageAt = player.message ? new Date().toISOString() : null;
   return game;
 }
 
