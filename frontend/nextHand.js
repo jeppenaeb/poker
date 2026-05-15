@@ -127,6 +127,7 @@
       seat.classList.remove("empty");
       seat.innerHTML = "";
       seat.style.display = "none";
+      seat.style.removeProperty("--player-color");
       seat.draggable = false;
       seat.dataset.playerId = "";
       seat.dataset.logicalIndex = "";
@@ -149,6 +150,7 @@
     }
 
     seat.classList.remove("empty");
+    seat.style.setProperty("--player-color", player.color || "#4DA3FF");
     seat.draggable = isHost && game.status === "lobby";
     seat.innerHTML = `
       <strong>${player.id === getCurrentPlayerId() ? "Dig" : player.name}</strong>
