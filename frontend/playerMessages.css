@@ -68,13 +68,13 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   overflow: hidden;
-  border: 1px solid rgba(134, 239, 172, 0.45);
+  border: 1px solid rgba(146, 101, 48, 0.55);
   border-radius: 12px;
-  background: rgba(2, 6, 23, 0.9);
-  color: #f8fafc;
+  background: linear-gradient(180deg, #f6e3bd 0%, #e7c891 100%);
+  color: #1f1306;
   padding: 7px 11px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.2;
   text-align: center;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
@@ -101,9 +101,9 @@
   width: 10px;
   height: 10px;
   transform: translate(-50%, -50%) rotate(45deg);
-  border-right: 1px solid rgba(134, 239, 172, 0.45);
-  border-bottom: 1px solid rgba(134, 239, 172, 0.45);
-  background: rgba(2, 6, 23, 0.9);
+  border-right: 1px solid rgba(146, 101, 48, 0.55);
+  border-bottom: 1px solid rgba(146, 101, 48, 0.55);
+  background: #e7c891;
 }
 
 .game-seat-a .player-chat-text,
@@ -120,8 +120,9 @@
   bottom: 100%;
   transform: translate(-50%, 50%) rotate(45deg);
   border: 0;
-  border-left: 1px solid rgba(134, 239, 172, 0.45);
-  border-top: 1px solid rgba(134, 239, 172, 0.45);
+  border-left: 1px solid rgba(146, 101, 48, 0.55);
+  border-top: 1px solid rgba(146, 101, 48, 0.55);
+  background: #f6e3bd;
 }
 
 @media (max-width: 560px) {
