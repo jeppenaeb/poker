@@ -45,14 +45,51 @@ function setEphemeralMessage(player, message) {
   player.messageAt = player.message ? new Date().toISOString() : null;
 }
 
-function actionMessage(action, amount) {
+function previousRoundActions(game) {
+  const hand = game.hand;
+  if (!hand) return [];
+
+  return (hand.actionLog || []).filter((entry) => entry.phase === hand.phase);
+}
+
+function hasPreviousAction(game, actions) {
+  const wantedActions = Array.isArray(actions) ? actions : [actions];
+  return previousRoundActions(game).some((entry) => wantedActions.includes(entry.action));
+}
+
+function actionMessage(game, action, amount) {
   const raiseAmount = Number(amount || 0);
 
-  if (action === "check") return randomText(["Jeg checker.", "Jeg checker også."]);
-  if (action === "call") return randomText(["Jeg caller.", "Jeg caller også.", "Jeg er med."]);
-  if (action === "fold") return randomText(["Jeg folder.", "Jeg smider kortene."]);
-  if (action === "all_in") return randomText(["Jeg er all-in.", "Jeg er med. Action time!"]);
-  if (action === "raise") return randomText([`Jeg raiser til ${raiseAmount}.`, `Jeg re-raiser til ${raiseAmount}.`]);
+  if (action === "check") {
+    const options = ["Check.", "Jeg checker.", "Jeg nøjes med at checke."];
+    if (hasPreviousAction(game, "check")) options.push("Jeg checker også.");
+    return randomText(options);
+  }
+
+  if (action === "call") {
+    const options = ["Jeg caller.", "Jeg er med.", "Jeg vil gerne se."];
+    if (hasPreviousAction(game, "call")) options.push("Jeg caller også.");
+    return randomText(options);
+  }
+
+  if (action === "raise") {
+    const options = [`Jeg raiser til ${raiseAmount}.`, `Jeg forhøjer til ${raiseAmount}.`];
+    if (hasPreviousAction(game, ["raise", "all_in"])) options.push(`Jeg re-raiser til ${raiseAmount}.`);
+    return randomText(options);
+  }
+
+  if (action === "fold") {
+    const options = ["Jeg folder.", "Jeg smider kortene.", "Jeg er ude.", "Tjaeh, I fortsætter bare uden mig."];
+    if (hasPreviousAction(game, "fold")) options.push("Jeg er også ude.");
+    return randomText(options);
+  }
+
+  if (action === "all_in") {
+    const options = ["All-in!", "Jeg er all-in!", "Jeg skubber hele stacken ind. All-in!"];
+    if (hasPreviousAction(game, "all_in")) options.push("Jeg er med på all-in. Action time!");
+    return randomText(options);
+  }
+
   return "";
 }
 
@@ -226,10 +263,11 @@ function playerAction({ code, playerId, action, amount }) {
   if (!game) throw new Error("GAME_NOT_FOUND");
 
   const player = game.players.find((item) => item.id === playerId);
+  const message = actionMessage(game, action, amount);
   const updatedGame = applyPlayerAction(game, { playerId, action, amount });
 
   if (player) {
-    setEphemeralMessage(player, actionMessage(action, amount));
+    setEphemeralMessage(player, message);
   }
 
   return updatedGame;
