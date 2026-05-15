@@ -3,9 +3,17 @@ const { generateGameCode, normalizeGameCode } = require("./gameCode");
 const { applyPlayerAction, createFirstHand } = require("./pokerEngine");
 const { createNextHand } = require("./nextHandEngine");
 
+const PLAYER_COLORS = ["#4DA3FF", "#2EEB82", "#9B6BFF", "#FFB84D", "#42E8E0", "#FF5C7A"];
 const games = new Map();
 
-function createPlayer(name, isHost = false) {
+function randomPlayerColor(existingPlayers = []) {
+  const usedColors = new Set(existingPlayers.map((player) => player.color).filter(Boolean));
+  const availableColors = PLAYER_COLORS.filter((color) => !usedColors.has(color));
+  const palette = availableColors.length > 0 ? availableColors : PLAYER_COLORS;
+  return palette[Math.floor(Math.random() * palette.length)];
+}
+
+function createPlayer(name, isHost = false, color = randomPlayerColor()) {
   return {
     id: crypto.randomUUID(),
     name,
@@ -14,7 +22,8 @@ function createPlayer(name, isHost = false) {
     buyInsUsed: 0,
     chipsBought: 1000,
     status: "active",
-    message: ""
+    message: "",
+    color
   };
 }
 
@@ -81,7 +90,7 @@ function joinGame({ code, playerName }) {
   const normalizedName = sanitizeName(playerName);
   if (!normalizedName) throw new Error("MISSING_PLAYER_NAME");
 
-  const player = createPlayer(normalizedName, false);
+  const player = createPlayer(normalizedName, false, randomPlayerColor(game.players));
   game.players.push(player);
   game.tableSeats.push(player.id);
 
