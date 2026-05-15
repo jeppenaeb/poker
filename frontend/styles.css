@@ -36,10 +36,10 @@ select {
 }
 
 .app-shell {
-  width: min(920px, 100%);
+  width: min(1120px, 100%);
   min-height: 100vh;
   margin: 0 auto;
-  padding: 18px;
+  padding: 14px;
 }
 
 .view {
@@ -165,6 +165,10 @@ h2 {
   justify-content: space-between;
 }
 
+.compact-header {
+  margin-bottom: 10px;
+}
+
 .panel {
   background: rgba(22, 32, 51, 0.94);
   border: 1px solid var(--line);
@@ -265,16 +269,16 @@ select {
 }
 
 .status-strip {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: var(--surface-2);
-  padding: 12px 14px;
+  padding: 10px 13px;
   color: var(--muted);
 }
 
 .table-panel {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .felt-table {
@@ -377,16 +381,21 @@ select {
   left: 0;
 }
 
+.game-surface-panel {
+  padding: 10px;
+}
+
 .game-table {
   position: relative;
-  min-height: 460px;
+  min-height: 660px;
+  overflow: visible;
 }
 
 .game-table::before {
   content: "";
   position: absolute;
-  inset: 14% 8%;
-  border: 8px solid var(--wood);
+  inset: 8% 4% 31% 4%;
+  border: 9px solid var(--wood);
   border-radius: 999px;
   background: radial-gradient(circle, var(--felt), var(--felt-dark));
   box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.26);
@@ -394,11 +403,11 @@ select {
 
 .board-center {
   position: absolute;
-  inset: 32% 20%;
+  inset: 22% 18% 42% 18%;
   z-index: 1;
   display: grid;
   place-items: center;
-  gap: 8px;
+  gap: 7px;
   text-align: center;
 }
 
@@ -467,15 +476,15 @@ select {
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 12px;
   background: rgba(2, 6, 23, 0.72);
-  padding: 9px 14px;
+  padding: 8px 13px;
   font-weight: 800;
 }
 
 .game-seat {
   position: absolute;
   z-index: 2;
-  width: 124px;
-  min-height: 82px;
+  width: 134px;
+  min-height: 88px;
   display: grid;
   align-content: center;
   gap: 4px;
@@ -493,7 +502,17 @@ select {
 }
 
 .game-seat.is-you {
+  width: 158px;
+  min-height: 102px;
   background: #23324a;
+  border-color: var(--player-color, #4da3ff);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--player-color, #4da3ff), transparent 72%);
+}
+
+.game-seat.is-you.is-current {
+  box-shadow:
+    0 0 0 3px rgba(34, 197, 94, 0.22),
+    0 0 24px rgba(34, 197, 94, 0.28);
 }
 
 .game-seat span {
@@ -522,50 +541,98 @@ select {
 }
 
 .game-seat-b {
-  top: 16%;
+  top: 13%;
   right: 0;
 }
 
 .game-seat-c {
-  bottom: 18%;
+  bottom: 238px;
   right: 0;
 }
 
 .game-seat-d {
-  bottom: 0;
+  bottom: 184px;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .game-seat-e {
-  bottom: 18%;
+  bottom: 238px;
   left: 0;
 }
 
 .game-seat-f {
-  top: 16%;
+  top: 13%;
   left: 0;
 }
 
-.hand-panel {
+.player-dock {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  z-index: 4;
+  width: min(660px, 96%);
+  transform: translateX(-50%);
   display: grid;
-  gap: 16px;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.34);
+  border-radius: 16px;
+  background: rgba(11, 18, 32, 0.9);
+  box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(8px);
+}
+
+.player-dock.is-active-turn {
+  border-color: rgba(34, 197, 94, 0.72);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.14), 0 -8px 28px rgba(0, 0, 0, 0.28);
+}
+
+.own-hand-compact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.own-card-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.dock-label {
+  color: #86efac;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.player-dock .card {
+  min-width: 42px;
+  min-height: 56px;
+  font-size: 19px;
 }
 
 .hand-strength {
-  margin-top: 10px;
+  margin: 0;
   border: 1px solid rgba(134, 239, 172, 0.28);
   border-radius: 12px;
   background: rgba(20, 83, 45, 0.24);
   color: #dcfce7;
-  padding: 10px 12px;
+  padding: 8px 10px;
   text-align: center;
+  font-size: 13px;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .action-panel {
   display: grid;
-  gap: 12px;
+  gap: 8px;
 }
 
 .action-panel[hidden] {
@@ -575,7 +642,55 @@ select {
 .action-row {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.action-row .primary-action,
+.action-row .secondary-action,
+.action-row .danger-action,
+.action-row .warning-action {
+  min-height: 42px;
+  padding: 9px 10px;
+  border-radius: 9px;
+}
+
+.raise-input-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 8px;
+}
+
+.raise-input-row span {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.raise-input-row input {
+  width: 120px;
+  padding: 9px 10px;
+  text-align: center;
+}
+
+.game-info-line {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  color: #cbd5e1;
+  font-size: 13px;
+}
+
+.game-info-line span {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 999px;
+  background: rgba(11, 18, 32, 0.62);
+  padding: 6px 10px;
+}
+
+.game-info-line strong {
+  color: #86efac;
 }
 
 .rule-grid {
@@ -604,9 +719,64 @@ select {
   font-size: 16px;
 }
 
+@media (max-width: 760px) {
+  .game-table {
+    min-height: 640px;
+  }
+
+  .game-table::before {
+    inset: 10% 1% 34% 1%;
+    border-width: 8px;
+  }
+
+  .board-center {
+    inset: 23% 8% 44% 8%;
+  }
+
+  .game-seat {
+    width: 112px;
+    min-height: 80px;
+    padding: 7px;
+    font-size: 11px;
+  }
+
+  .game-seat.is-you {
+    width: 136px;
+    min-height: 94px;
+  }
+
+  .game-seat-c,
+  .game-seat-e {
+    bottom: 250px;
+  }
+
+  .game-seat-d {
+    bottom: 180px;
+  }
+
+  .own-hand-compact {
+    display: grid;
+    justify-items: center;
+  }
+
+  .action-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .player-dock .card {
+    min-width: 38px;
+    min-height: 50px;
+    font-size: 17px;
+  }
+
+  .hand-strength {
+    white-space: normal;
+  }
+}
+
 @media (max-width: 560px) {
   .app-shell {
-    padding: 12px;
+    padding: 10px;
   }
 
   .hero {
@@ -630,5 +800,25 @@ select {
 
   .action-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .community-row {
+    gap: 5px;
+  }
+
+  .card {
+    min-width: 40px;
+    min-height: 54px;
+    font-size: 18px;
+  }
+
+  .player-dock {
+    width: 100%;
+    padding: 8px;
+  }
+
+  .game-info-line {
+    font-size: 12px;
+    gap: 6px;
   }
 }
