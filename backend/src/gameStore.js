@@ -121,7 +121,7 @@ function actionMessage(game, action, amount, playerId) {
   }
 
   if (action === "fold") {
-    const options = ["Jeg folder.", "Jeg smider kortene.", "Jeg er ude.", "Tjaeh, I fortsætter bare uden mig."];
+    const options = ["Jeg folder.", "Jeg smider kortene.", "Jeg er ude."];
     if (hasPreviousAction(game, "fold")) options.push("Jeg er også ude.");
     return randomText(options);
   }
@@ -259,51 +259,39 @@ function startGame({ code, playerId }) {
   const player = game.players.find((item) => item.id === playerId);
   if (!player || !player.isHost) throw new Error("ONLY_HOST_CAN_START");
 
-  if (game.players.length !== game.maxPlayers) {
-    throw new Error("LOBBY_NOT_FULL");
-  }
-
+  game.tableSeats = Array.isArray(game.tableSeats) && game.tableSeats.length > 0 ? game.tableSeats : game.players.map((item) => item.id);
   game.status = "in_progress";
-  game.startedAt = new Date().toISOString();
+  game.hand = createFirstHand(game);
 
-  const startedGame = createFirstHand(game);
-  const dealer = startedGame.players.find((item) => item.id === startedGame.hand.dealerPlayerId);
-  const starterName = playerName(startedGame, startedGame.hand.currentPlayerId);
-
+  const dealer = game.players.find((item) => item.id === game.hand.dealerId);
+  const firstPlayer = game.players.find((item) => item.id === game.hand.currentPlayerId);
   if (dealer) {
-    setEphemeralMessage(dealer, `Jeg vandt lodtrækningen og er dealer i første runde. ${starterName}, du starter.`);
+    setEphemeralMessage(
+      dealer,
+      `Jeg vandt lodtrækningen og er dealer i første runde. ${firstPlayer?.name || "Næste spiller"}, du starter.`
+    );
   }
 
-  return startedGame;
+  return game;
 }
 
-function updateSeats({ code, playerId, tableSeats }) {
+function reorderSeats({ code, playerId, tableSeats }) {
   const game = getGame(code);
 
   if (!game) throw new Error("GAME_NOT_FOUND");
-  if (game.status !== "lobby") throw new Error("GAME_ALREADY_STARTED");
 
   const player = game.players.find((item) => item.id === playerId);
-  if (!player || !player.isHost) throw new Error("ONLY_HOST_CAN_UPDATE_SEATS");
+  if (!player || !player.isHost) throw new Error("ONLY_HOST_CAN_REORDER");
+  if (game.status !== "lobby") throw new Error("GAME_ALREADY_STARTED");
 
-  if (!Array.isArray(tableSeats)) throw new Error("INVALID_SEATS");
-  if (tableSeats.length !== game.maxPlayers) throw new Error("INVALID_SEAT_COUNT");
+  const currentIds = new Set(game.players.map((item) => item.id));
+  const normalizedSeats = Array.isArray(tableSeats) ? tableSeats.filter((seatPlayerId) => currentIds.has(seatPlayerId)) : [];
 
-  const joinedPlayerIds = new Set(game.players.map((item) => item.id));
-  const usedPlayerIds = new Set();
+  if (normalizedSeats.length !== game.players.length || new Set(normalizedSeats).size !== game.players.length) {
+    throw new Error("INVALID_SEAT_ORDER");
+  }
 
-  tableSeats.forEach((seatPlayerId) => {
-    if (!seatPlayerId) return;
-    if (!joinedPlayerIds.has(seatPlayerId)) throw new Error("UNKNOWN_PLAYER_IN_SEAT");
-    if (usedPlayerIds.has(seatPlayerId)) throw new Error("DUPLICATE_PLAYER_IN_SEATS");
-    usedPlayerIds.add(seatPlayerId);
-  });
-
-  game.players.forEach((joinedPlayer) => {
-    if (!usedPlayerIds.has(joinedPlayer.id)) throw new Error("MISSING_PLAYER_IN_SEATS");
-  });
-
-  game.tableSeats = tableSeats;
+  game.tableSeats = normalizedSeats;
   return game;
 }
 
@@ -311,16 +299,28 @@ function playerAction({ code, playerId, action, amount }) {
   const game = getGame(code);
 
   if (!game) throw new Error("GAME_NOT_FOUND");
+  if (game.status !== "in_progress") throw new Error("GAME_NOT_IN_PROGRESS");
 
   const player = game.players.find((item) => item.id === playerId);
+  if (!player) throw new Error("PLAYER_NOT_FOUND");
+
   const message = actionMessage(game, action, amount, playerId);
   const updatedGame = applyPlayerAction(game, { playerId, action, amount });
-
-  if (player) {
-    setEphemeralMessage(player, message);
-  }
-
+  if (message) setEphemeralMessage(player, message);
   return updatedGame;
+}
+
+function nextHand({ code, playerId }) {
+  const game = getGame(code);
+
+  if (!game) throw new Error("GAME_NOT_FOUND");
+
+  const player = game.players.find((item) => item.id === playerId);
+  if (!player || !player.isHost) throw new Error("ONLY_HOST_CAN_START_NEXT_HAND");
+  if (!game.hand || game.hand.phase !== "hand_complete") throw new Error("HAND_NOT_COMPLETE");
+
+  game.hand = createNextHand(game);
+  return game;
 }
 
 function setPlayerMessage({ code, playerId, message }) {
@@ -335,26 +335,14 @@ function setPlayerMessage({ code, playerId, message }) {
   return game;
 }
 
-function nextHand({ code, playerId }) {
-  const game = getGame(code);
-
-  if (!game) throw new Error("GAME_NOT_FOUND");
-  if (game.status !== "in_progress") throw new Error("GAME_NOT_IN_PROGRESS");
-
-  const player = game.players.find((item) => item.id === playerId);
-  if (!player || !player.isHost) throw new Error("ONLY_HOST_CAN_START_NEXT_HAND");
-
-  return createNextHand(game);
-}
-
 module.exports = {
   createGame,
   joinGame,
   getGame,
   getGameForPlayer,
-  nextHand,
-  playerAction,
-  setPlayerMessage,
   startGame,
-  updateSeats
+  reorderSeats,
+  playerAction,
+  nextHand,
+  setPlayerMessage
 };
