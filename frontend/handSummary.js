@@ -34,6 +34,28 @@
         ];
   }
 
+  function mergeEquivalentPots(game, pots) {
+    const merged = new Map();
+
+    pots.forEach((pot) => {
+      const winnerIds = [...(pot.winnerPlayerIds || [])].sort();
+      const key = [game.hand.winningReason, winnerIds.join(","), pot.winningHand || ""].join("|");
+      const existing = merged.get(key);
+
+      if (existing) {
+        existing.amount += Number(pot.amount || 0);
+      } else {
+        merged.set(key, {
+          ...pot,
+          winnerPlayerIds: winnerIds,
+          amount: Number(pot.amount || 0)
+        });
+      }
+    });
+
+    return [...merged.values()];
+  }
+
   function summarizePot(game, pot) {
     const winnerNames = (pot.winnerPlayerIds || []).map((playerId) => playerName(game, playerId));
     const winners = joinNames(winnerNames);
@@ -55,7 +77,9 @@
     const hand = game.hand;
     if (!hand || hand.phase !== "hand_complete") return "";
 
-    return awardedPotsForGame(game).map((pot) => summarizePot(game, pot)).join(" ");
+    return mergeEquivalentPots(game, awardedPotsForGame(game))
+      .map((pot) => summarizePot(game, pot))
+      .join(" ");
   }
 
   function handCompleteSummary(game) {
