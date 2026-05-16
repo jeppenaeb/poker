@@ -66,13 +66,14 @@
     });
   }
 
-  function ownMessageTarget() {
-    if (!latestOwnPlayerId) return null;
-
+  function chatButtonTarget() {
     return (
+      document.querySelector("#gameView.is-active #playerDock") ||
+      document.querySelector("#lobbyView.is-active .table-panel") ||
       seatForPlayer(latestOwnPlayerId) ||
       document.querySelector(".game-seat.is-you, .seat.is-you") ||
-      document.getElementById("playerDock")
+      document.getElementById("playerDock") ||
+      document.querySelector("#lobbyView .table-panel")
     );
   }
 
@@ -80,15 +81,22 @@
     document.querySelectorAll(".player-chat-button, .player-chat-text").forEach((element) => element.remove());
   }
 
-  function addMessageButton(seat) {
-    if (!seat || seat.querySelector(".player-chat-button")) return;
+  function addMessageButton(target) {
+    if (!target) return;
+
+    document.querySelectorAll(".player-chat-button").forEach((button) => {
+      if (button.parentElement !== target) button.remove();
+    });
+
+    if (target.querySelector(".player-chat-button")) return;
 
     const button = document.createElement("button");
     button.type = "button";
     button.className = "player-chat-button";
     button.title = "Skriv kort besked";
+    button.setAttribute("aria-label", "Skriv kort besked");
     button.textContent = "💬";
-    seat.appendChild(button);
+    target.appendChild(button);
   }
 
   function isFreshMessage(player) {
@@ -112,20 +120,17 @@
     clearMessageUi();
 
     game.players.forEach((player) => {
-      const seat = seatForPlayer(player.id);
-      if (!seat) return;
-
-      addMessageText(seat, player);
+      addMessageText(seatForPlayer(player.id), player);
     });
 
-    addMessageButton(ownMessageTarget());
+    addMessageButton(chatButtonTarget());
   }
 
   function ensureMessageButton() {
     if (!latestGame) return;
 
     latestOwnPlayerId = ownPlayerIdFromGame(latestGame);
-    addMessageButton(ownMessageTarget());
+    addMessageButton(chatButtonTarget());
   }
 
   async function submitMessage() {
