@@ -9,14 +9,6 @@
     5: [3, 4, 5, 1, 2],
     6: [3, 4, 5, 0, 1, 2]
   };
-  const betPositions = {
-    0: { x: 50, y: 28 },
-    1: { x: 82, y: 37 },
-    2: { x: 82, y: 57 },
-    3: { x: 50, y: 66 },
-    4: { x: 18, y: 57 },
-    5: { x: 18, y: 37 }
-  };
   const potScatter = [
     { x: -10, y: -8, r: -8 },
     { x: 10, y: -8, r: 9 },
@@ -87,6 +79,22 @@
     }
 
     return amountAsChips(normalizedAmount, stackValues, maxChips);
+  }
+
+  function activeBetTotal(hand) {
+    return Object.values(hand?.bets || {}).reduce((sum, amount) => sum + Number(amount || 0), 0);
+  }
+
+  function collectedPotAmount(hand) {
+    if (!hand) return 0;
+    if (["hand_complete", "showdown"].includes(hand.phase)) return Number(hand.pot || 0);
+    return Math.max(0, Number(hand.pot || 0) - activeBetTotal(hand));
+  }
+
+  function syncDisplayedPot(hand) {
+    const potBox = document.getElementById("potBox");
+    if (!potBox) return;
+    potBox.textContent = `Pot: ${collectedPotAmount(hand)}`;
   }
 
   function syncChipPreview() {
@@ -230,7 +238,7 @@
     const layer = document.createElement("div");
     layer.className = "table-chip-layer";
 
-    const potAmount = Math.max(0, Number(hand.pot || 0));
+    const potAmount = collectedPotAmount(hand);
     if (potAmount > 0) {
       const pot = document.createElement("div");
       pot.className = "pot-chip-scatter";
@@ -246,21 +254,33 @@
     table.appendChild(layer);
   }
 
+  function betPositionForSeat(seat, layer) {
+    const seatRect = seat.getBoundingClientRect();
+    const layerRect = layer.getBoundingClientRect();
+    const seatX = ((seatRect.left + seatRect.width / 2 - layerRect.left) / layerRect.width) * 100;
+    const seatY = ((seatRect.top + seatRect.height / 2 - layerRect.top) / layerRect.height) * 100;
+
+    return {
+      x: seatX + (50 - seatX) * 0.34,
+      y: seatY + (50 - seatY) * 0.34
+    };
+  }
+
   function renderBetChips(game, layer) {
     const hand = game.hand;
-    const orderedPlayers = orderedPlayersForPerspective(game);
-    const visualSlots = visualSlotsByPlayerCount[orderedPlayers.length] || visualSlotsByPlayerCount[6];
 
-    orderedPlayers.forEach((player, index) => {
+    (game.players || []).forEach((player) => {
       const amount = Number(hand.bets?.[player.id] || 0);
       if (amount <= 0) return;
 
-      const visualSlot = visualSlots[index];
-      const position = betPositions[visualSlot];
-      if (!position) return;
+      const seat = Array.from(document.querySelectorAll(".game-seat")).find((item) => {
+        return item.dataset.playerId === player.id && item.style.display !== "none";
+      });
+      if (!seat) return;
 
+      const position = betPositionForSeat(seat, layer);
       const bet = document.createElement("div");
-      bet.className = `player-bet-chips player-bet-slot-${visualSlot}`;
+      bet.className = "player-bet-chips";
       bet.style.left = `${position.x}%`;
       bet.style.top = `${position.y}%`;
       bet.setAttribute("aria-label", `${player.name} har bettet ${amount}`);
@@ -282,6 +302,7 @@
     originalRenderGame(game);
     enhanceChipControls();
     decorateStackChips(game);
+    syncDisplayedPot(game.hand);
     renderPotChips(game);
   };
 })();
