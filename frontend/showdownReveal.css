@@ -60,12 +60,20 @@
   color: #dc2626;
 }
 
-.showdown-mini-card.is-best {
+.showdown-mini-card.is-best,
+.showdown-mini-card.is-best.is-winner-card,
+.showdown-mini-card.is-best.is-winner-card.is-neutral {
   border-color: #22c55e;
   border-width: 2px;
+  background: #f8fafc;
   box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.42);
   opacity: 1;
   filter: none;
+}
+
+.showdown-mini-card.is-best.is-red,
+.showdown-mini-card.is-best.is-winner-card.is-neutral.is-red {
+  color: #dc2626;
 }
 
 .showdown-mini-card.is-winner-card.is-neutral {
@@ -88,9 +96,12 @@
   box-shadow: none;
 }
 
-.card.showdown-board-best {
+.card.showdown-board-best,
+.card.showdown-board-best.showdown-board-unused {
   border-color: #86efac;
   box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.34);
+  opacity: 1;
+  filter: none;
 }
 
 .card.showdown-board-unused {
