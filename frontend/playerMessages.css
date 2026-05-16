@@ -68,6 +68,7 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   overflow: hidden;
+  pointer-events: none;
   border: 1px solid rgba(75, 63, 45, 0.28);
   border-radius: 12px;
   background: #E8E4DA;
