@@ -16,6 +16,11 @@
     { x: 2, y: 11, r: -11 },
     { x: 22, y: 8, r: 6 }
   ];
+  const positionPucks = {
+    D: { className: "dealer", label: "DEALER" },
+    SB: { className: "small-blind", label: "SMALL<br>BLIND" },
+    BB: { className: "big-blind", label: "BIG<br>BLIND" }
+  };
 
   if (typeof originalRenderGame !== "function") return;
 
@@ -189,6 +194,18 @@
       .filter(Boolean);
   }
 
+  function decoratePositionPucks() {
+    document.querySelectorAll(".badge-line b").forEach((badge) => {
+      const text = badge.textContent.trim();
+      const puck = positionPucks[text];
+      if (!puck) return;
+
+      badge.className = `position-puck position-puck-${puck.className}`;
+      badge.innerHTML = `<span>${puck.label}</span>`;
+      badge.setAttribute("aria-label", puck.label.replace("<br>", " "));
+    });
+  }
+
   function decorateStackChips(game) {
     document.querySelectorAll(".seat-chip-stack").forEach((item) => item.remove());
 
@@ -305,6 +322,7 @@
 
   window.renderGame = function renderGameWithChips(game) {
     originalRenderGame(game);
+    decoratePositionPucks();
     enhanceChipControls();
     decorateStackChips(game);
     syncDisplayedPot(game.hand);
