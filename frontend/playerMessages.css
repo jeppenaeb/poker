@@ -15,8 +15,7 @@
   overflow: visible;
 }
 
-.table-panel,
-.player-dock {
+.table-panel {
   position: relative;
 }
 
