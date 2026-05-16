@@ -9,7 +9,9 @@
   }
 
   function ownPlayerIdFromGame(game) {
-    return Object.keys(game.hand?.holeCards || {})[0] || currentPlayerIdFromApp();
+    const appPlayerId = currentPlayerIdFromApp();
+    if (appPlayerId) return appPlayerId;
+    return Object.keys(game.hand?.holeCards || {})[0] || "";
   }
 
   function rankLabel(card) {
