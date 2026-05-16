@@ -2,6 +2,7 @@ const API_BASE = "/poker/api";
 
 let currentGameCode = "";
 let currentPlayerId = "";
+window.pokerCurrentPlayerId = currentPlayerId;
 let lobbyTimer = null;
 let draggedPlayerId = "";
 
@@ -175,6 +176,7 @@ async function loadLobby() {
 function enterLobby(game, playerId) {
   currentGameCode = game.code;
   currentPlayerId = playerId;
+  window.pokerCurrentPlayerId = currentPlayerId;
   renderLobby(game);
   showView("lobbyView");
   if (lobbyTimer) clearInterval(lobbyTimer);
@@ -388,6 +390,7 @@ function evaluateHand(cards) {
 }
 
 function renderGame(game) {
+  window.pokerCurrentPlayerId = currentPlayerId;
   const hand = game.hand;
   const currentPlayer = game.players.find((player) => player.id === currentPlayerId);
   const winner = game.players.find((player) => player.id === hand.winnerPlayerId);
@@ -414,10 +417,12 @@ function renderGame(game) {
     if (!player) {
       seat.style.display = "none";
       seat.innerHTML = "";
+      seat.dataset.playerId = "";
       continue;
     }
 
     seat.style.display = "";
+    seat.dataset.playerId = player.id;
     seat.classList.toggle("is-current", player.id === hand.currentPlayerId);
     seat.classList.toggle("is-you", player.id === currentPlayerId);
 
