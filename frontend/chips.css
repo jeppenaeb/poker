@@ -60,7 +60,8 @@
 }
 
 .bet-chip,
-.stack-chip {
+.stack-chip,
+.table-chip {
   --chip-base: #2563eb;
   --chip-edge: #ffffff;
   --chip-ring: rgba(255, 255, 255, 0.72);
@@ -89,7 +90,8 @@
 }
 
 .bet-chip::before,
-.stack-chip::before {
+.stack-chip::before,
+.table-chip::before {
   content: "";
   position: absolute;
   inset: 18%;
@@ -103,7 +105,8 @@
 }
 
 .bet-chip::after,
-.stack-chip::after {
+.stack-chip::after,
+.table-chip::after {
   content: "";
   position: absolute;
   inset: 8%;
