@@ -49,32 +49,22 @@
 
 .player-chat-button {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 6px;
+  right: 6px;
   left: auto;
   z-index: 30;
   display: grid;
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
   place-items: center;
   border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 999px;
   background: rgba(2, 6, 23, 0.86);
   color: #f8fafc;
   cursor: pointer;
-  font-size: 15px;
+  font-size: 12px;
   line-height: 1;
   padding: 0;
-}
-
-.table-panel > .player-chat-button {
-  top: 12px;
-  right: 12px;
-}
-
-.player-dock > .player-chat-button {
-  top: 9px;
-  right: 9px;
 }
 
 .player-chat-button:hover {
@@ -165,9 +155,9 @@
   }
 
   .player-chat-button {
-    width: 28px;
-    height: 28px;
-    font-size: 14px;
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
   }
 
   .player-chat-text {
