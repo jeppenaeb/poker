@@ -5,12 +5,17 @@
   let latestOwnPlayerId = "";
 
   function currentPlayerIdFromApp() {
+    if (window.pokerCurrentPlayerId) return window.pokerCurrentPlayerId;
     return typeof currentPlayerId === "undefined" ? "" : currentPlayerId;
   }
 
   function ownPlayerIdFromGame(game) {
     const appPlayerId = currentPlayerIdFromApp();
     if (appPlayerId) return appPlayerId;
+
+    const ownSeat = document.querySelector(".game-seat.is-you, .seat.is-you");
+    if (ownSeat?.dataset.playerId) return ownSeat.dataset.playerId;
+
     return Object.keys(game.hand?.holeCards || {})[0] || "";
   }
 
@@ -61,12 +66,22 @@
     });
   }
 
+  function ownMessageTarget() {
+    if (!latestOwnPlayerId) return null;
+
+    return (
+      seatForPlayer(latestOwnPlayerId) ||
+      document.querySelector(".game-seat.is-you, .seat.is-you") ||
+      document.getElementById("playerDock")
+    );
+  }
+
   function clearMessageUi() {
     document.querySelectorAll(".player-chat-button, .player-chat-text").forEach((element) => element.remove());
   }
 
   function addMessageButton(seat) {
-    if (seat.querySelector(".player-chat-button")) return;
+    if (!seat || seat.querySelector(".player-chat-button")) return;
 
     const button = document.createElement("button");
     button.type = "button";
@@ -82,7 +97,7 @@
   }
 
   function addMessageText(seat, player) {
-    if (!isFreshMessage(player)) return;
+    if (!seat || !isFreshMessage(player)) return;
 
     const bubble = document.createElement("div");
     bubble.className = "player-chat-text";
@@ -100,24 +115,21 @@
       const seat = seatForPlayer(player.id);
       if (!seat) return;
 
-      if (player.id === latestOwnPlayerId) {
-        addMessageButton(seat);
-      }
-
       addMessageText(seat, player);
     });
+
+    addMessageButton(ownMessageTarget());
   }
 
   function ensureMessageButton() {
-    if (!latestGame || !latestOwnPlayerId) return;
+    if (!latestGame) return;
 
-    const seat = seatForPlayer(latestOwnPlayerId);
-    if (!seat) return;
-
-    addMessageButton(seat);
+    latestOwnPlayerId = ownPlayerIdFromGame(latestGame);
+    addMessageButton(ownMessageTarget());
   }
 
   async function submitMessage() {
+    latestOwnPlayerId = latestGame ? ownPlayerIdFromGame(latestGame) : latestOwnPlayerId;
     if (!latestGame || !latestOwnPlayerId) return;
 
     const ownPlayer = latestGame.players.find((player) => player.id === latestOwnPlayerId);
