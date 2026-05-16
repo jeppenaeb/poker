@@ -295,6 +295,8 @@ function reorderSeats({ code, playerId, tableSeats }) {
   return game;
 }
 
+const updateSeats = reorderSeats;
+
 function playerAction({ code, playerId, action, amount }) {
   const game = getGame(code);
 
@@ -342,6 +344,7 @@ module.exports = {
   getGameForPlayer,
   startGame,
   reorderSeats,
+  updateSeats,
   playerAction,
   nextHand,
   setPlayerMessage
