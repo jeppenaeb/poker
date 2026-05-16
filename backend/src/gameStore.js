@@ -261,9 +261,9 @@ function startGame({ code, playerId }) {
 
   game.tableSeats = Array.isArray(game.tableSeats) && game.tableSeats.length > 0 ? game.tableSeats : game.players.map((item) => item.id);
   game.status = "in_progress";
-  game.hand = createFirstHand(game);
+  createFirstHand(game);
 
-  const dealer = game.players.find((item) => item.id === game.hand.dealerId);
+  const dealer = game.players.find((item) => item.id === game.hand.dealerPlayerId);
   const firstPlayer = game.players.find((item) => item.id === game.hand.currentPlayerId);
   if (dealer) {
     setEphemeralMessage(
@@ -319,7 +319,7 @@ function nextHand({ code, playerId }) {
   if (!player || !player.isHost) throw new Error("ONLY_HOST_CAN_START_NEXT_HAND");
   if (!game.hand || game.hand.phase !== "hand_complete") throw new Error("HAND_NOT_COMPLETE");
 
-  game.hand = createNextHand(game);
+  createNextHand(game);
   return game;
 }
 
