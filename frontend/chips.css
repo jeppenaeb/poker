@@ -69,7 +69,7 @@
   position: relative;
   isolation: isolate;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.96);
   background:
     radial-gradient(circle at center, var(--chip-base) 0 41%, transparent 42%),
     repeating-conic-gradient(
@@ -80,7 +80,7 @@
   box-shadow:
     inset 0 1px 2px rgba(255, 255, 255, 0.34),
     inset 0 -2px 3px rgba(0, 0, 0, 0.22),
-    0 2px 5px rgba(0, 0, 0, 0.34);
+    0 3px 7px rgba(0, 0, 0, 0.42);
   font-weight: 950;
   color: #ffffff;
   line-height: 1;
@@ -203,17 +203,21 @@
 .pot-chip-scatter {
   position: absolute;
   left: 50%;
-  top: 61%;
-  width: 96px;
-  height: 58px;
+  top: 72%;
+  width: 122px;
+  height: 64px;
   transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: rgba(2, 6, 23, 0.18);
 }
 
 .table-chip {
-  width: 27px;
-  height: 27px;
-  border-width: 1px;
-  font-size: 6px;
+  width: 34px;
+  height: 34px;
+  border-width: 2px;
+  font-size: 7px;
+  opacity: 1;
+  filter: saturate(1.14) contrast(1.08);
 }
 
 .table-chip.pot-table-chip {
@@ -226,12 +230,15 @@
 
 .player-bet-chips {
   position: absolute;
+  z-index: 4;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 72px;
-  min-height: 30px;
+  min-width: 92px;
+  min-height: 42px;
   transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: rgba(2, 6, 23, 0.18);
 }
 
 .player-bet-chip-label {
@@ -239,18 +246,18 @@
   left: 50%;
   bottom: calc(100% + 2px);
   transform: translateX(-50%);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 999px;
-  background: rgba(2, 6, 23, 0.72);
+  background: rgba(2, 6, 23, 0.82);
   color: #f8fafc;
-  padding: 2px 6px;
-  font-size: 10px;
+  padding: 3px 7px;
+  font-size: 11px;
   font-weight: 900;
   line-height: 1;
 }
 
 .bet-table-chip {
-  margin-left: -9px;
+  margin-left: -10px;
   transform: translateY(var(--bet-chip-y, 0px)) rotate(var(--bet-chip-r, 0deg));
 }
 
@@ -260,20 +267,20 @@
 
 .table-chip-more {
   position: absolute;
-  right: -8px;
+  right: -9px;
   bottom: -6px;
   border-radius: 999px;
-  background: rgba(2, 6, 23, 0.8);
+  background: rgba(2, 6, 23, 0.9);
   color: #f8fafc;
-  padding: 2px 5px;
-  font-size: 10px;
+  padding: 3px 6px;
+  font-size: 11px;
   font-weight: 900;
   line-height: 1;
 }
 
 .player-bet-chips .table-chip-more {
   position: static;
-  margin-left: 4px;
+  margin-left: 5px;
 }
 
 #nextHandButton {
@@ -301,19 +308,19 @@
   }
 
   .pot-chip-scatter {
-    top: 63%;
-    transform: translate(-50%, -50%) scale(0.88);
+    top: 73%;
+    transform: translate(-50%, -50%) scale(0.9);
   }
 
   .table-chip {
-    width: 24px;
-    height: 24px;
-    font-size: 5px;
+    width: 30px;
+    height: 30px;
+    font-size: 6px;
   }
 
   .player-bet-chips {
-    min-width: 58px;
-    transform: translate(-50%, -50%) scale(0.88);
+    min-width: 78px;
+    transform: translate(-50%, -50%) scale(0.9);
   }
 }
 
@@ -330,6 +337,6 @@
   }
 
   .player-bet-chip-label {
-    font-size: 9px;
+    font-size: 10px;
   }
 }
