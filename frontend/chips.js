@@ -237,6 +237,7 @@
 
     const layer = document.createElement("div");
     layer.className = "table-chip-layer";
+    table.appendChild(layer);
 
     const potAmount = collectedPotAmount(hand);
     if (potAmount > 0) {
@@ -251,18 +252,22 @@
     }
 
     renderBetChips(game, layer);
-    table.appendChild(layer);
   }
 
   function betPositionForSeat(seat, layer) {
     const seatRect = seat.getBoundingClientRect();
     const layerRect = layer.getBoundingClientRect();
+
+    if (!layerRect.width || !layerRect.height) {
+      return { x: 50, y: 50 };
+    }
+
     const seatX = ((seatRect.left + seatRect.width / 2 - layerRect.left) / layerRect.width) * 100;
     const seatY = ((seatRect.top + seatRect.height / 2 - layerRect.top) / layerRect.height) * 100;
 
     return {
-      x: seatX + (50 - seatX) * 0.34,
-      y: seatY + (50 - seatY) * 0.34
+      x: seatX + (50 - seatX) * 0.28,
+      y: seatY + (50 - seatY) * 0.28
     };
   }
 
