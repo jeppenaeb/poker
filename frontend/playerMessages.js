@@ -66,6 +66,8 @@
   }
 
   function addMessageButton(seat) {
+    if (seat.querySelector(".player-chat-button")) return;
+
     const button = document.createElement("button");
     button.type = "button";
     button.className = "player-chat-button";
@@ -106,6 +108,15 @@
     });
   }
 
+  function ensureMessageButton() {
+    if (!latestGame || !latestOwnPlayerId) return;
+
+    const seat = seatForPlayer(latestOwnPlayerId);
+    if (!seat) return;
+
+    addMessageButton(seat);
+  }
+
   async function submitMessage() {
     if (!latestGame || !latestOwnPlayerId) return;
 
@@ -137,6 +148,8 @@
       } else {
         window.renderGame(data.game);
       }
+
+      ensureMessageButton();
     } catch (error) {
       const status = document.getElementById(latestGame.status === "lobby" ? "lobbyStatus" : "gameStatus");
       if (status) status.textContent = `Kunne ikke sende besked: ${error.message}`;
@@ -214,6 +227,8 @@
     };
     renderGame = window.renderGame;
   }
+
+  window.setInterval(ensureMessageButton, 500);
 
   document.addEventListener("click", (event) => {
     const copyButton = event.target.closest(".copy-code-button");
