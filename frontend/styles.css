@@ -441,10 +441,15 @@ select {
 
 .card.card-back {
   background:
-    radial-gradient(circle at center, rgba(255, 255, 255, 0.16) 0 18%, transparent 19%),
-    repeating-linear-gradient(135deg, #1d4ed8 0 9px, #1e40af 9px 18px);
-  border-color: #93c5fd;
-  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.14), 0 4px 10px rgba(0, 0, 0, 0.22);
+    linear-gradient(#b51f21, #b51f21) padding-box,
+    repeating-linear-gradient(45deg, rgba(80, 8, 10, 0.46) 0 1px, transparent 1px 8px) padding-box,
+    repeating-linear-gradient(-45deg, rgba(80, 8, 10, 0.46) 0 1px, transparent 1px 8px) padding-box,
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.1), transparent 58%) padding-box;
+  border: 5px solid #f8fafc;
+  box-shadow:
+    inset 0 0 0 2px rgba(90, 9, 12, 0.46),
+    inset 0 0 0 5px rgba(185, 28, 28, 0.38),
+    0 4px 10px rgba(0, 0, 0, 0.22);
 }
 
 .card.card-revealed {
