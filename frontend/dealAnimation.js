@@ -22,10 +22,30 @@
     return !completedDeals.has(handKey(game));
   }
 
+  function activeSeatIds(game) {
+    const activePlayers = new Set(
+      (game.players || [])
+        .filter((player) => player.status === "active")
+        .map((player) => player.id)
+    );
+
+    return (game.tableSeats || []).filter((playerId) => activePlayers.has(playerId));
+  }
+
+  function dealRoundOrder(game) {
+    const seats = activeSeatIds(game);
+    const dealerId = game.hand?.dealerPlayerId;
+    const dealerIndex = seats.indexOf(dealerId);
+
+    if (seats.length === 0) return [];
+    if (dealerIndex === -1) return seats;
+
+    return [...seats.slice(dealerIndex + 1), ...seats.slice(0, dealerIndex + 1)];
+  }
+
   function dealOrder(game) {
-    const activeIds = new Set(Object.keys(game.hand?.holeCards || {}));
-    const seats = (game.tableSeats || []).filter((playerId) => activeIds.has(playerId));
-    return [...seats, ...seats];
+    const roundOrder = dealRoundOrder(game);
+    return [...roundOrder, ...roundOrder];
   }
 
   function createBackCard(isFresh) {
@@ -50,15 +70,19 @@
     document.querySelectorAll(".dealt-hole-cards").forEach((element) => element.remove());
   }
 
+  function findSeatForPlayer(playerId) {
+    return Array.from(document.querySelectorAll(".game-seat")).find((item) => {
+      return item.dataset.playerId === playerId && item.style.display !== "none";
+    });
+  }
+
   function addSeatCards(game, cardCounts) {
     removeSeatCards();
 
     if (!isActiveHand(game.hand)) return;
 
     Object.entries(cardCounts).forEach(([playerId, count]) => {
-      const seat = Array.from(document.querySelectorAll(".game-seat")).find((item) => {
-        return item.dataset.playerId === playerId && item.style.display !== "none";
-      });
+      const seat = findSeatForPlayer(playerId);
 
       if (!seat || count <= 0) return;
 
@@ -76,8 +100,8 @@
 
   function showAllSeatCards(game) {
     const counts = {};
-    (game.tableSeats || []).forEach((playerId) => {
-      if (game.hand?.holeCards?.[playerId]) counts[playerId] = 2;
+    activeSeatIds(game).forEach((playerId) => {
+      counts[playerId] = 2;
     });
     addSeatCards(game, counts);
   }
