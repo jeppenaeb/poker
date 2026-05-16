@@ -202,18 +202,31 @@
 
 .pot-chip-scatter {
   position: absolute;
-  left: 50%;
-  top: 72%;
-  width: 122px;
-  height: 64px;
+  left: 62%;
+  top: 49%;
+  width: 96px;
+  height: 44px;
   transform: translate(-50%, -50%);
+}
+
+.pot-chip-label {
+  position: absolute;
+  left: calc(100% + 5px);
+  top: 50%;
+  transform: translateY(-50%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 999px;
-  background: rgba(2, 6, 23, 0.18);
+  background: rgba(2, 6, 23, 0.82);
+  color: #f8fafc;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 950;
+  line-height: 1;
 }
 
 .table-chip {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-width: 2px;
   font-size: 7px;
   opacity: 1;
@@ -234,26 +247,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 92px;
-  min-height: 42px;
+  min-width: 84px;
+  min-height: 38px;
   transform: translate(-50%, -50%);
-  border-radius: 999px;
-  background: rgba(2, 6, 23, 0.18);
-}
-
-.player-bet-chip-label {
-  position: absolute;
-  left: 50%;
-  bottom: calc(100% + 2px);
-  transform: translateX(-50%);
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  border-radius: 999px;
-  background: rgba(2, 6, 23, 0.82);
-  color: #f8fafc;
-  padding: 3px 7px;
-  font-size: 11px;
-  font-weight: 900;
-  line-height: 1;
 }
 
 .bet-table-chip {
@@ -308,18 +304,19 @@
   }
 
   .pot-chip-scatter {
-    top: 73%;
-    transform: translate(-50%, -50%) scale(0.9);
+    left: 64%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(0.88);
   }
 
   .table-chip {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     font-size: 6px;
   }
 
   .player-bet-chips {
-    min-width: 78px;
+    min-width: 70px;
     transform: translate(-50%, -50%) scale(0.9);
   }
 }
@@ -336,7 +333,8 @@
     font-size: 8px;
   }
 
-  .player-bet-chip-label {
+  .pot-chip-label,
+  .table-chip-more {
     font-size: 10px;
   }
 }
