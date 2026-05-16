@@ -4,6 +4,7 @@
   const stackValues = [500, 100, 50, 20, 10];
   const potTarget = { x: 72, y: 42 };
   let lastBetRender = { handNumber: null, collectedPot: 0, bets: [] };
+  const awardedAnimationKeys = new Set();
   const visualSlotsByPlayerCount = {
     2: [3, 0],
     3: [3, 5, 1],
@@ -247,6 +248,118 @@
     container.appendChild(more);
   }
 
+  function fallbackPot(game) {
+    return Object.values(game.hand?.contributions || {}).reduce((sum, amount) => sum + Number(amount || 0), 0);
+  }
+
+  function awardedPotsForGame(game) {
+    const hand = game.hand;
+    if (!hand) return [];
+
+    if (hand.awardedPots && hand.awardedPots.length > 0) return hand.awardedPots;
+
+    return [
+      {
+        amount: fallbackPot(game) || Number(hand.pot || 0),
+        winnerPlayerIds: hand.winnerPlayerIds || (hand.winnerPlayerId ? [hand.winnerPlayerId] : [])
+      }
+    ];
+  }
+
+  function winnerAmounts(game) {
+    const amounts = new Map();
+
+    awardedPotsForGame(game).forEach((pot) => {
+      const winners = pot.winnerPlayerIds || [];
+      if (winners.length === 0) return;
+
+      const share = Math.floor(Number(pot.amount || 0) / winners.length);
+      winners.forEach((playerId) => {
+        amounts.set(playerId, (amounts.get(playerId) || 0) + share);
+      });
+    });
+
+    return amounts;
+  }
+
+  function elementCenterPercent(element, layer) {
+    const elementRect = element.getBoundingClientRect();
+    const layerRect = layer.getBoundingClientRect();
+
+    if (!layerRect.width || !layerRect.height) return { x: 50, y: 50 };
+
+    return {
+      x: ((elementRect.left + elementRect.width / 2 - layerRect.left) / layerRect.width) * 100,
+      y: ((elementRect.top + elementRect.height / 2 - layerRect.top) / layerRect.height) * 100
+    };
+  }
+
+  function animatePotToWinners(game, layer) {
+    const hand = game.hand;
+    if (!hand || hand.phase !== "hand_complete") return;
+
+    const amounts = winnerAmounts(game);
+    if (amounts.size === 0) return;
+
+    const signature = [...amounts.entries()]
+      .map(([playerId, amount]) => `${playerId}:${amount}`)
+      .sort()
+      .join("|");
+    const key = `${game.code}:${hand.number}:${signature}`;
+
+    if (awardedAnimationKeys.has(key)) return;
+    awardedAnimationKeys.add(key);
+
+    [...amounts.entries()].forEach(([playerId, amount], winnerIndex) => {
+      const seat = Array.from(document.querySelectorAll(".game-seat")).find((item) => {
+        return item.dataset.playerId === playerId && item.style.display !== "none";
+      });
+      if (!seat) return;
+
+      const target = elementCenterPercent(seat, layer);
+      const ghost = document.createElement("div");
+      ghost.className = "pot-award-chips";
+      ghost.style.left = `${potTarget.x}%`;
+      ghost.style.top = `${potTarget.y}%`;
+      ghost.style.transitionDelay = `${winnerIndex * 120}ms`;
+      ghost.setAttribute("aria-label", `Puljen flyttes til ${seat.textContent.trim()}`);
+
+      const { chips, rest } = amountAsCompactChips(amount, 6);
+      chips.forEach((value, chipIndex) => {
+        const chip = makeChip(value, "table-chip pot-award-chip");
+        if (chipIndex === 0) chip.classList.add("is-first-bet-chip");
+        chip.style.setProperty("--bet-chip-y", `${chipIndex % 2 === 0 ? 0 : -3}px`);
+        chip.style.setProperty("--bet-chip-r", `${chipIndex * 10}deg`);
+        ghost.appendChild(chip);
+      });
+      addRemainder(ghost, rest);
+      layer.appendChild(ghost);
+
+      const layerRect = layer.getBoundingClientRect();
+      const deltaX = ((target.x - potTarget.x) / 100) * layerRect.width;
+      const deltaY = ((target.y - potTarget.y) / 100) * layerRect.height;
+      const animation = ghost.animate(
+        [
+          { transform: "translate(-50%, -50%) scale(1)", opacity: 1 },
+          { transform: `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px)) scale(1.04)`, opacity: 1, offset: 0.82 },
+          { transform: `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px)) scale(0.78)`, opacity: 0 }
+        ],
+        {
+          duration: 920,
+          delay: winnerIndex * 120,
+          easing: "cubic-bezier(.18,.86,.28,1)",
+          fill: "forwards"
+        }
+      );
+
+      if (animation?.finished) {
+        animation.finished.then(() => ghost.remove()).catch(() => ghost.remove());
+      } else {
+        setTimeout(() => ghost.remove(), 1100 + winnerIndex * 120);
+      }
+    });
+  }
+
   function renderPotChips(game) {
     const hand = game.hand;
     const table = document.querySelector(".game-table");
@@ -272,6 +385,7 @@
 
     const currentBets = renderBetChips(game, layer);
     animateClearedBetsToPot(hand, potAmount, currentBets, layer);
+    animatePotToWinners(game, layer);
     lastBetRender = {
       handNumber: hand.number,
       collectedPot: potAmount,
