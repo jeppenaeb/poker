@@ -10,22 +10,19 @@
     6: [3, 4, 5, 0, 1, 2]
   };
   const betPositions = {
-    0: { x: 50, y: 30 },
-    1: { x: 67, y: 39 },
-    2: { x: 67, y: 56 },
-    3: { x: 50, y: 67 },
-    4: { x: 33, y: 56 },
-    5: { x: 33, y: 39 }
+    0: { x: 50, y: 28 },
+    1: { x: 82, y: 37 },
+    2: { x: 82, y: 57 },
+    3: { x: 50, y: 66 },
+    4: { x: 18, y: 57 },
+    5: { x: 18, y: 37 }
   };
   const potScatter = [
-    { x: -30, y: -7, r: -10 },
-    { x: -9, y: -13, r: 7 },
-    { x: 13, y: -11, r: 15 },
-    { x: 34, y: -5, r: -5 },
-    { x: -22, y: 13, r: 11 },
-    { x: 2, y: 11, r: -13 },
-    { x: 25, y: 14, r: 6 },
-    { x: 46, y: 9, r: -8 }
+    { x: -10, y: -8, r: -8 },
+    { x: 10, y: -8, r: 9 },
+    { x: -18, y: 10, r: 12 },
+    { x: 2, y: 11, r: -11 },
+    { x: 22, y: 8, r: 6 }
   ];
 
   if (typeof originalRenderGame !== "function") return;
@@ -60,6 +57,38 @@
     return { chips, rest };
   }
 
+  function amountAsCompactChips(amount, maxChips = 5) {
+    const normalizedAmount = Math.max(0, Number(amount) || 0);
+    if (normalizedAmount === 0) return { chips: [], rest: 0 };
+
+    const bestByAmount = new Map([[0, []]]);
+
+    for (let current = 0; current <= normalizedAmount; current += 10) {
+      const currentChips = bestByAmount.get(current);
+      if (!currentChips) continue;
+
+      stackValues.forEach((value) => {
+        const nextAmount = current + value;
+        if (nextAmount > normalizedAmount) return;
+
+        const candidate = [...currentChips, value].sort((first, second) => second - first);
+        const existing = bestByAmount.get(nextAmount);
+
+        if (!existing || candidate.length < existing.length) {
+          bestByAmount.set(nextAmount, candidate);
+        }
+      });
+    }
+
+    const chips = bestByAmount.get(normalizedAmount) || [];
+
+    if (chips.length <= maxChips) {
+      return { chips, rest: 0 };
+    }
+
+    return amountAsChips(normalizedAmount, stackValues, maxChips);
+  }
+
   function syncChipPreview() {
     const raiseInput = document.getElementById("raiseAmount");
     const total = document.getElementById("chipRaiseTotal");
@@ -68,7 +97,7 @@
     if (!raiseInput || !total || !preview) return;
 
     const amount = Number(raiseInput.value || 0);
-    const { chips, rest } = amountAsChips(amount);
+    const { chips, rest } = amountAsCompactChips(amount);
 
     total.textContent = amount;
     preview.innerHTML = "";
@@ -165,7 +194,7 @@
       const cluster = document.createElement("div");
       cluster.className = "seat-chip-stack";
 
-      amountAsChips(player.stack, stackValues, 5).chips.forEach((value) => {
+      amountAsCompactChips(player.stack, 5).chips.forEach((value) => {
         cluster.appendChild(makeChip(value, "stack-chip"));
       });
 
@@ -207,7 +236,12 @@
       pot.className = "pot-chip-scatter";
       pot.setAttribute("aria-label", `Pulje ${potAmount}`);
 
-      const { chips, rest } = amountAsChips(potAmount, stackValues, 12);
+      const potLabel = document.createElement("span");
+      potLabel.className = "pot-chip-label";
+      potLabel.textContent = potAmount;
+      pot.appendChild(potLabel);
+
+      const { chips, rest } = amountAsCompactChips(potAmount, 5);
       chips.forEach((value, index) => pot.appendChild(makeTableChip(value, index, "pot-table-chip")));
       addRemainder(pot, rest);
       layer.appendChild(pot);
@@ -236,12 +270,7 @@
       bet.style.top = `${position.y}%`;
       bet.setAttribute("aria-label", `${player.name} har bettet ${amount}`);
 
-      const label = document.createElement("span");
-      label.className = "player-bet-chip-label";
-      label.textContent = amount;
-      bet.appendChild(label);
-
-      const { chips, rest } = amountAsChips(amount, stackValues, 7);
+      const { chips, rest } = amountAsCompactChips(amount, 5);
       chips.forEach((value, chipIndex) => {
         const chip = makeChip(value, "table-chip bet-table-chip");
         if (chipIndex === 0) chip.classList.add("is-first-bet-chip");
