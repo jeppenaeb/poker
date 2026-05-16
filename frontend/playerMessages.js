@@ -66,37 +66,21 @@
     });
   }
 
-  function chatButtonTarget() {
-    return (
-      document.querySelector("#gameView.is-active #playerDock") ||
-      document.querySelector("#lobbyView.is-active .table-panel") ||
-      seatForPlayer(latestOwnPlayerId) ||
-      document.querySelector(".game-seat.is-you, .seat.is-you") ||
-      document.getElementById("playerDock") ||
-      document.querySelector("#lobbyView .table-panel")
-    );
-  }
-
   function clearMessageUi() {
     document.querySelectorAll(".player-chat-button, .player-chat-text").forEach((element) => element.remove());
   }
 
-  function addMessageButton(target) {
-    if (!target) return;
-
-    document.querySelectorAll(".player-chat-button").forEach((button) => {
-      if (button.parentElement !== target) button.remove();
-    });
-
-    if (target.querySelector(".player-chat-button")) return;
+  function addMessageButton(seat, playerId) {
+    if (!seat || seat.querySelector(".player-chat-button")) return;
 
     const button = document.createElement("button");
     button.type = "button";
     button.className = "player-chat-button";
+    button.dataset.chatPlayerId = playerId || "";
     button.title = "Skriv kort besked";
     button.setAttribute("aria-label", "Skriv kort besked");
     button.textContent = "💬";
-    target.appendChild(button);
+    seat.appendChild(button);
   }
 
   function isFreshMessage(player) {
@@ -120,17 +104,21 @@
     clearMessageUi();
 
     game.players.forEach((player) => {
-      addMessageText(seatForPlayer(player.id), player);
-    });
+      const seat = seatForPlayer(player.id);
+      if (!seat) return;
 
-    addMessageButton(chatButtonTarget());
+      addMessageButton(seat, player.id);
+      addMessageText(seat, player);
+    });
   }
 
-  function ensureMessageButton() {
+  function ensureMessageButtons() {
     if (!latestGame) return;
 
     latestOwnPlayerId = ownPlayerIdFromGame(latestGame);
-    addMessageButton(chatButtonTarget());
+    latestGame.players.forEach((player) => {
+      addMessageButton(seatForPlayer(player.id), player.id);
+    });
   }
 
   async function submitMessage() {
@@ -166,7 +154,7 @@
         window.renderGame(data.game);
       }
 
-      ensureMessageButton();
+      ensureMessageButtons();
     } catch (error) {
       const status = document.getElementById(latestGame.status === "lobby" ? "lobbyStatus" : "gameStatus");
       if (status) status.textContent = `Kunne ikke sende besked: ${error.message}`;
@@ -245,7 +233,7 @@
     renderGame = window.renderGame;
   }
 
-  window.setInterval(ensureMessageButton, 500);
+  window.setInterval(ensureMessageButtons, 500);
 
   document.addEventListener("click", (event) => {
     const copyButton = event.target.closest(".copy-code-button");
