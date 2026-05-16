@@ -10,22 +10,22 @@
     6: [3, 4, 5, 0, 1, 2]
   };
   const betPositions = {
-    0: { x: 50, y: 27 },
-    1: { x: 70, y: 36 },
-    2: { x: 70, y: 54 },
-    3: { x: 50, y: 62 },
-    4: { x: 30, y: 54 },
-    5: { x: 30, y: 36 }
+    0: { x: 50, y: 30 },
+    1: { x: 67, y: 39 },
+    2: { x: 67, y: 56 },
+    3: { x: 50, y: 67 },
+    4: { x: 33, y: 56 },
+    5: { x: 33, y: 39 }
   };
   const potScatter = [
-    { x: -22, y: -8, r: -12 },
-    { x: 0, y: -13, r: 8 },
-    { x: 22, y: -7, r: 17 },
-    { x: -12, y: 10, r: 12 },
-    { x: 13, y: 11, r: -9 },
-    { x: 34, y: 8, r: 6 },
-    { x: -32, y: 8, r: -5 },
-    { x: 0, y: 18, r: 15 }
+    { x: -30, y: -7, r: -10 },
+    { x: -9, y: -13, r: 7 },
+    { x: 13, y: -11, r: 15 },
+    { x: 34, y: -5, r: -5 },
+    { x: -22, y: 13, r: 11 },
+    { x: 2, y: 11, r: -13 },
+    { x: 25, y: 14, r: 6 },
+    { x: 46, y: 9, r: -8 }
   ];
 
   if (typeof originalRenderGame !== "function") return;
@@ -207,7 +207,7 @@
       pot.className = "pot-chip-scatter";
       pot.setAttribute("aria-label", `Pulje ${potAmount}`);
 
-      const { chips, rest } = amountAsChips(potAmount, stackValues, 14);
+      const { chips, rest } = amountAsChips(potAmount, stackValues, 12);
       chips.forEach((value, index) => pot.appendChild(makeTableChip(value, index, "pot-table-chip")));
       addRemainder(pot, rest);
       layer.appendChild(pot);
@@ -241,12 +241,12 @@
       label.textContent = amount;
       bet.appendChild(label);
 
-      const { chips, rest } = amountAsChips(amount, stackValues, 8);
+      const { chips, rest } = amountAsChips(amount, stackValues, 7);
       chips.forEach((value, chipIndex) => {
         const chip = makeChip(value, "table-chip bet-table-chip");
         if (chipIndex === 0) chip.classList.add("is-first-bet-chip");
         chip.style.setProperty("--bet-chip-y", `${chipIndex % 2 === 0 ? 0 : -3}px`);
-        chip.style.setProperty("--bet-chip-r", `${chipIndex * 12}deg`);
+        chip.style.setProperty("--bet-chip-r", `${chipIndex * 10}deg`);
         bet.appendChild(chip);
       });
       addRemainder(bet, rest);
