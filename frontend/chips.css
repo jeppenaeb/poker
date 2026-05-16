@@ -265,10 +265,10 @@
 
 .pot-chip-scatter {
   position: absolute;
-  left: 62%;
-  top: 49%;
-  width: 82px;
-  height: 34px;
+  left: 72%;
+  top: 42%;
+  width: 88px;
+  height: 40px;
   transform: translate(-50%, -50%);
 }
 
@@ -360,8 +360,8 @@
   }
 
   .pot-chip-scatter {
-    left: 64%;
-    top: 50%;
+    left: 75%;
+    top: 43%;
     transform: translate(-50%, -50%) scale(0.95);
   }
 
