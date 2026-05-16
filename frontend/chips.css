@@ -296,6 +296,18 @@
   transform: translate(-50%, -50%);
 }
 
+.bet-chips-collecting {
+  z-index: 8;
+  will-change: transform, opacity;
+}
+
+.bet-chips-collecting .table-chip {
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.38),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.24),
+    0 6px 12px rgba(0, 0, 0, 0.46);
+}
+
 .bet-table-chip {
   margin-left: -7px;
   transform: translateY(var(--bet-chip-y, 0px)) rotate(var(--bet-chip-r, 0deg));
