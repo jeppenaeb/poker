@@ -236,11 +236,6 @@
       pot.className = "pot-chip-scatter";
       pot.setAttribute("aria-label", `Pulje ${potAmount}`);
 
-      const potLabel = document.createElement("span");
-      potLabel.className = "pot-chip-label";
-      potLabel.textContent = potAmount;
-      pot.appendChild(potLabel);
-
       const { chips, rest } = amountAsCompactChips(potAmount, 5);
       chips.forEach((value, index) => pot.appendChild(makeTableChip(value, index, "pot-table-chip")));
       addRemainder(pot, rest);
