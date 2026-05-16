@@ -12,6 +12,8 @@
   };
 
   function ownPlayerIdFromGame(game) {
+    if (window.pokerCurrentPlayerId) return window.pokerCurrentPlayerId;
+    if (typeof currentPlayerId !== "undefined" && currentPlayerId) return currentPlayerId;
     return Object.keys(game.hand?.holeCards || {})[0] || "";
   }
 
