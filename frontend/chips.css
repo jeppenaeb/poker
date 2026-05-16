@@ -219,19 +219,19 @@
   height: 41px;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.42);
   border-radius: 50%;
   padding: 0;
   background: #d8d4df;
-  color: #080808;
+  color: #090909;
   box-shadow:
-    inset 0 2px 4px rgba(255, 255, 255, 0.44),
-    inset 0 -3px 5px rgba(0, 0, 0, 0.2),
-    0 4px 10px rgba(0, 0, 0, 0.36);
-  font-size: 8px;
+    inset 0 1px 2px rgba(255, 255, 255, 0.26),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.14),
+    0 3px 8px rgba(0, 0, 0, 0.32);
+  font-size: 7px;
   font-weight: 950;
-  letter-spacing: 0.5px;
-  line-height: 1.04;
+  letter-spacing: 0.25px;
+  line-height: 1.02;
   text-align: center;
   text-transform: uppercase;
   text-shadow: none;
@@ -239,21 +239,19 @@
 
 .game-seat .position-puck span {
   display: block;
+  color: #090909;
 }
 
 .game-seat .position-puck-dealer {
-  background: radial-gradient(circle at 38% 28%, #ffffff 0 8%, #dad6e0 44%, #bdb7c7 100%);
-  color: #0f0f12;
+  background: radial-gradient(circle at 38% 28%, #f2eff6 0 14%, #d6d1dc 58%, #c0bacb 100%);
 }
 
 .game-seat .position-puck-small-blind {
-  background: radial-gradient(circle at 34% 24%, #6f8dff 0 8%, #2448c8 48%, #16318f 100%);
-  color: #ffffff;
+  background: radial-gradient(circle at 34% 24%, #4f72f2 0 14%, #2448c8 58%, #19349a 100%);
 }
 
 .game-seat .position-puck-big-blind {
-  background: radial-gradient(circle at 34% 24%, #ffe68c 0 8%, #f3b323 50%, #c98900 100%);
-  color: #090909;
+  background: radial-gradient(circle at 34% 24%, #ffdc64 0 14%, #f0b51d 60%, #c98d00 100%);
 }
 
 .table-chip-layer {
@@ -364,7 +362,7 @@
   .game-seat .position-puck {
     width: 38px;
     height: 38px;
-    font-size: 7px;
+    font-size: 6.5px;
   }
 
   .table-chip-layer {
