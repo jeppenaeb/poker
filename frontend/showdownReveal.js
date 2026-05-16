@@ -244,6 +244,8 @@
     (hand.communityCards || []).forEach((card, index) => {
       const cardElement = boardCards[index];
       if (!cardElement) return;
+
+      cardElement.classList.remove("showdown-board-best", "showdown-board-unused");
       cardElement.classList.add(bestCards.has(card) ? "showdown-board-best" : "showdown-board-unused");
     });
   }
