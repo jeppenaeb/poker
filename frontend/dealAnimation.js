@@ -66,6 +66,17 @@
     return counts;
   }
 
+  function freshDeal(game, visibleDealCount) {
+    const order = dealOrder(game);
+    const playerId = order[visibleDealCount - 1];
+    if (!playerId) return null;
+
+    return {
+      playerId,
+      cardNumber: visibleCardCounts(game, visibleDealCount)[playerId]
+    };
+  }
+
   function removeSeatCards() {
     document.querySelectorAll(".dealt-hole-cards").forEach((element) => element.remove());
   }
@@ -76,7 +87,7 @@
     });
   }
 
-  function addSeatCards(game, cardCounts) {
+  function addSeatCards(game, cardCounts, freshCard = null) {
     removeSeatCards();
 
     if (!isActiveHand(game.hand)) return;
@@ -91,7 +102,9 @@
       holder.dataset.cardCount = String(count);
 
       for (let index = 0; index < count; index += 1) {
-        holder.appendChild(createBackCard(index === count - 1));
+        const cardNumber = index + 1;
+        const isFresh = freshCard?.playerId === playerId && freshCard.cardNumber === cardNumber;
+        holder.appendChild(createBackCard(isFresh));
       }
 
       seat.appendChild(holder);
@@ -149,7 +162,11 @@
         if (!currentState || !latestGame || handKey(latestGame) !== key) return;
 
         currentState.visibleCount = index + 1;
-        addSeatCards(latestGame, visibleCardCounts(latestGame, currentState.visibleCount));
+        addSeatCards(
+          latestGame,
+          visibleCardCounts(latestGame, currentState.visibleCount),
+          freshDeal(latestGame, currentState.visibleCount)
+        );
       }, DEAL_STEP_MS * (index + 1));
       state.timers.push(timer);
     });
