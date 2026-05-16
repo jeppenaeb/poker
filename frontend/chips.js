@@ -2,6 +2,8 @@
   const originalRenderGame = window.renderGame;
   const chipValues = [10, 20, 50, 100, 500];
   const stackValues = [500, 100, 50, 20, 10];
+  const potTarget = { x: 72, y: 42 };
+  let lastBetRender = { handNumber: null, collectedPot: 0, bets: [] };
   const visualSlotsByPlayerCount = {
     2: [3, 0],
     3: [3, 5, 1],
@@ -268,7 +270,62 @@
       layer.appendChild(pot);
     }
 
-    renderBetChips(game, layer);
+    const currentBets = renderBetChips(game, layer);
+    animateClearedBetsToPot(hand, potAmount, currentBets, layer);
+    lastBetRender = {
+      handNumber: hand.number,
+      collectedPot: potAmount,
+      bets: currentBets
+    };
+  }
+
+  function animateClearedBetsToPot(hand, potAmount, currentBets, layer) {
+    const hadVisibleBets = lastBetRender.bets.length > 0;
+    const sameHand = lastBetRender.handNumber === hand.number;
+    const betsWereCollected = currentBets.length === 0 && activeBetTotal(hand) === 0;
+    const potIncreased = potAmount > lastBetRender.collectedPot;
+
+    if (!sameHand || !hadVisibleBets || !betsWereCollected || !potIncreased) return;
+
+    lastBetRender.bets.forEach((snapshot, snapshotIndex) => {
+      const ghost = document.createElement("div");
+      ghost.className = "player-bet-chips bet-chips-collecting";
+      ghost.style.left = `${snapshot.x}%`;
+      ghost.style.top = `${snapshot.y}%`;
+      ghost.style.transitionDelay = `${snapshotIndex * 45}ms`;
+
+      snapshot.chips.forEach((value, chipIndex) => {
+        const chip = makeChip(value, "table-chip bet-table-chip");
+        if (chipIndex === 0) chip.classList.add("is-first-bet-chip");
+        chip.style.setProperty("--bet-chip-y", `${chipIndex % 2 === 0 ? 0 : -3}px`);
+        chip.style.setProperty("--bet-chip-r", `${chipIndex * 10}deg`);
+        ghost.appendChild(chip);
+      });
+      addRemainder(ghost, snapshot.rest);
+      layer.appendChild(ghost);
+
+      const layerRect = layer.getBoundingClientRect();
+      const deltaX = ((potTarget.x - snapshot.x) / 100) * layerRect.width;
+      const deltaY = ((potTarget.y - snapshot.y) / 100) * layerRect.height;
+      const animation = ghost.animate(
+        [
+          { transform: "translate(-50%, -50%) scale(1)", opacity: 1 },
+          { transform: `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px)) scale(0.86)`, opacity: 0.18 }
+        ],
+        {
+          duration: 620,
+          delay: snapshotIndex * 45,
+          easing: "cubic-bezier(.18,.86,.28,1)",
+          fill: "forwards"
+        }
+      );
+
+      if (animation?.finished) {
+        animation.finished.then(() => ghost.remove()).catch(() => ghost.remove());
+      } else {
+        setTimeout(() => ghost.remove(), 760 + snapshotIndex * 45);
+      }
+    });
   }
 
   function betPositionForSeat(seat, layer) {
@@ -283,13 +340,14 @@
     const seatY = ((seatRect.top + seatRect.height / 2 - layerRect.top) / layerRect.height) * 100;
 
     return {
-      x: seatX + (50 - seatX) * 0.28,
-      y: seatY + (50 - seatY) * 0.28
+      x: seatX + (50 - seatX) * 0.24,
+      y: seatY + (50 - seatY) * 0.24
     };
   }
 
   function renderBetChips(game, layer) {
     const hand = game.hand;
+    const snapshots = [];
 
     (game.players || []).forEach((player) => {
       const amount = Number(hand.bets?.[player.id] || 0);
@@ -317,7 +375,10 @@
       });
       addRemainder(bet, rest);
       layer.appendChild(bet);
+      snapshots.push({ playerId: player.id, x: position.x, y: position.y, chips, rest });
     });
+
+    return snapshots;
   }
 
   window.renderGame = function renderGameWithChips(game) {
