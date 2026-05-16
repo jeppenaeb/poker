@@ -283,9 +283,9 @@
   transform: translate(calc(-50% + var(--chip-x, 0px)), calc(-50% + var(--chip-y, 0px))) rotate(var(--chip-r, 0deg));
 }
 
-.player-bet-chips {
+.player-bet-chips,
+.pot-award-chips {
   position: absolute;
-  z-index: 4;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -294,24 +294,44 @@
   transform: translate(-50%, -50%);
 }
 
+.player-bet-chips {
+  z-index: 4;
+}
+
+.pot-award-chips {
+  z-index: 10;
+  min-width: 90px;
+  min-height: 34px;
+  will-change: transform, opacity;
+}
+
 .bet-chips-collecting {
   z-index: 8;
   will-change: transform, opacity;
 }
 
-.bet-chips-collecting .table-chip {
+.bet-chips-collecting .table-chip,
+.pot-award-chips .table-chip {
   box-shadow:
     inset 0 1px 2px rgba(255, 255, 255, 0.38),
     inset 0 -2px 3px rgba(0, 0, 0, 0.24),
     0 6px 12px rgba(0, 0, 0, 0.46);
 }
 
-.bet-table-chip {
+.pot-award-chips .table-chip {
+  width: 26px;
+  height: 26px;
+  font-size: 6px;
+}
+
+.bet-table-chip,
+.pot-award-chip {
   margin-left: -7px;
   transform: translateY(var(--bet-chip-y, 0px)) rotate(var(--bet-chip-r, 0deg));
 }
 
-.bet-table-chip.is-first-bet-chip {
+.bet-table-chip.is-first-bet-chip,
+.pot-award-chip.is-first-bet-chip {
   margin-left: 0;
 }
 
@@ -328,7 +348,8 @@
   line-height: 1;
 }
 
-.player-bet-chips .table-chip-more {
+.player-bet-chips .table-chip-more,
+.pot-award-chips .table-chip-more {
   position: static;
   margin-left: 5px;
 }
@@ -384,6 +405,17 @@
   .player-bet-chips {
     min-width: 64px;
     transform: translate(-50%, -50%) scale(0.95);
+  }
+
+  .pot-award-chips {
+    min-width: 78px;
+    transform: translate(-50%, -50%) scale(0.94);
+  }
+
+  .pot-award-chips .table-chip {
+    width: 24px;
+    height: 24px;
+    font-size: 5px;
   }
 }
 
