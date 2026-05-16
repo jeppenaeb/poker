@@ -68,7 +68,18 @@
   filter: none;
 }
 
-.showdown-mini-card.is-neutral,
+.showdown-mini-card.is-winner-card.is-neutral {
+  opacity: 0.78;
+  filter: grayscale(0.18);
+  border-color: rgba(203, 213, 225, 0.82);
+  background: #f1f5f9;
+  box-shadow: none;
+}
+
+.showdown-mini-card.is-winner-card.is-neutral.is-red {
+  color: #b91c1c;
+}
+
 .showdown-mini-card.is-loser-card {
   opacity: 0.28;
   filter: grayscale(0.75);
