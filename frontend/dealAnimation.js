@@ -6,6 +6,88 @@
   const completedDeals = new Set();
   const dealStates = new Map();
   let latestGame = null;
+  let audioContext = null;
+  let audioPrimed = false;
+
+  function getAudioContext() {
+    if (audioContext) return audioContext;
+
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return null;
+
+    audioContext = new AudioContextClass();
+    return audioContext;
+  }
+
+  function primeDealAudio() {
+    const context = getAudioContext();
+    if (!context || audioPrimed) return;
+
+    if (context.state === "suspended") {
+      context.resume().catch(() => {});
+    }
+
+    audioPrimed = true;
+  }
+
+  function playDealSound() {
+    const context = getAudioContext();
+    if (!context) return;
+
+    if (context.state === "suspended") {
+      context.resume().catch(() => {});
+    }
+
+    const now = context.currentTime;
+    const duration = 0.12;
+    const bufferSize = Math.max(1, Math.floor(context.sampleRate * duration));
+    const buffer = context.createBuffer(1, bufferSize, context.sampleRate);
+    const data = buffer.getChannelData(0);
+
+    for (let index = 0; index < bufferSize; index += 1) {
+      const progress = index / bufferSize;
+      data[index] = (Math.random() * 2 - 1) * (1 - progress) * 0.55;
+    }
+
+    const noise = context.createBufferSource();
+    const noiseFilter = context.createBiquadFilter();
+    const noiseGain = context.createGain();
+    const thump = context.createOscillator();
+    const thumpGain = context.createGain();
+
+    noise.buffer = buffer;
+    noiseFilter.type = "bandpass";
+    noiseFilter.frequency.setValueAtTime(1400, now);
+    noiseFilter.frequency.exponentialRampToValueAtTime(520, now + duration);
+    noiseFilter.Q.setValueAtTime(0.7, now);
+
+    noiseGain.gain.setValueAtTime(0.0001, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.12, now + 0.012);
+    noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    thump.type = "triangle";
+    thump.frequency.setValueAtTime(115, now);
+    thump.frequency.exponentialRampToValueAtTime(76, now + 0.09);
+    thumpGain.gain.setValueAtTime(0.0001, now);
+    thumpGain.gain.exponentialRampToValueAtTime(0.045, now + 0.01);
+    thumpGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+
+    noise.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(context.destination);
+
+    thump.connect(thumpGain);
+    thumpGain.connect(context.destination);
+
+    noise.start(now);
+    noise.stop(now + duration);
+    thump.start(now);
+    thump.stop(now + 0.1);
+  }
+
+  ["pointerdown", "keydown", "touchstart"].forEach((eventName) => {
+    window.addEventListener(eventName, primeDealAudio, { once: true, passive: true });
+  });
 
   function handKey(game) {
     return game?.hand ? `${game.code}-${game.hand.number}` : "";
@@ -162,6 +244,7 @@
         if (!currentState || !latestGame || handKey(latestGame) !== key) return;
 
         currentState.visibleCount = index + 1;
+        playDealSound();
         addSeatCards(
           latestGame,
           visibleCardCounts(latestGame, currentState.visibleCount),
