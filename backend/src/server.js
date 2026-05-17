@@ -8,7 +8,6 @@ const {
   getGameForPlayer,
   nextHand,
   playerAction,
-  setPlayerMessage,
   startGame,
   updateSeats
 } = require("./gameStore");
@@ -131,23 +130,6 @@ app.post(`${API_BASE}/games/:code/action`, (req, res) => {
 
     const game = playerAction({ code, playerId, action, amount });
     const safeGame = getGameForPlayer(code, playerId) || game;
-    res.json({ game: safeGame });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-app.post(`${API_BASE}/games/:code/message`, (req, res) => {
-  try {
-    const code = normalizeGameCode(req.params.code);
-    const { playerId, message } = req.body;
-
-    if (!playerId) {
-      return res.status(400).json({ error: "MISSING_PLAYER_ID" });
-    }
-
-    setPlayerMessage({ code, playerId, message });
-    const safeGame = getGameForPlayer(code, playerId) || getGame(code);
     res.json({ game: safeGame });
   } catch (error) {
     res.status(400).json({ error: error.message });
