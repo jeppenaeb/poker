@@ -13,10 +13,6 @@ function randomPlayerColor(existingPlayers = []) {
   return palette[Math.floor(Math.random() * palette.length)];
 }
 
-function randomText(options) {
-  return options[Math.floor(Math.random() * options.length)];
-}
-
 function createPlayer(name, isHost = false, color = randomPlayerColor()) {
   return {
     id: crypto.randomUUID(),
@@ -26,126 +22,12 @@ function createPlayer(name, isHost = false, color = randomPlayerColor()) {
     buyInsUsed: 0,
     chipsBought: 1000,
     status: "active",
-    message: "",
-    messageAt: null,
     color
   };
 }
 
 function sanitizeName(name) {
   return String(name || "").trim().slice(0, 12);
-}
-
-function sanitizeMessage(message, maxLength = 120) {
-  return String(message || "").trim().slice(0, maxLength);
-}
-
-function setEphemeralMessage(player, message) {
-  player.message = sanitizeMessage(message);
-  player.messageAt = player.message ? new Date().toISOString() : null;
-}
-
-function playerName(game, playerId) {
-  return game.players.find((player) => player.id === playerId)?.name || "næste spiller";
-}
-
-function previousRoundActions(game) {
-  const hand = game.hand;
-  if (!hand) return [];
-
-  return (hand.actionLog || []).filter((entry) => entry.phase === hand.phase);
-}
-
-function hasPreviousAction(game, actions) {
-  const wantedActions = Array.isArray(actions) ? actions : [actions];
-  return previousRoundActions(game).some((entry) => wantedActions.includes(entry.action));
-}
-
-function currentBet(hand) {
-  return Math.max(0, ...Object.values(hand?.bets || {}));
-}
-
-function isPlayerActionableBeforeAction(game, playerId) {
-  const hand = game.hand;
-  const player = game.players.find((item) => item.id === playerId);
-  return Boolean(
-    hand &&
-      player &&
-      player.status === "active" &&
-      player.stack > 0 &&
-      !hand.foldedPlayerIds.includes(playerId) &&
-      !hand.allInPlayerIds.includes(playerId)
-  );
-}
-
-function isFinalCallBeforeNewCards(game, playerId) {
-  const hand = game.hand;
-  if (!hand || hand.phase === "river") return false;
-
-  const betToMatch = currentBet(hand);
-  const projectedActedPlayerIds = new Set([...(hand.actedPlayerIds || []), playerId]);
-
-  return game.tableSeats.filter((seatPlayerId) => isPlayerActionableBeforeAction(game, seatPlayerId)).every((seatPlayerId) => {
-    const projectedBet = seatPlayerId === playerId ? betToMatch : hand.bets[seatPlayerId] || 0;
-    return projectedActedPlayerIds.has(seatPlayerId) && projectedBet === betToMatch;
-  });
-}
-
-function finalCallMessage(game) {
-  return game.hand?.phase === "preflop"
-    ? "Jeg caller. Lad os se nogle kort."
-    : "Jeg caller. Lad os se et kort til.";
-}
-
-function actionMessage(game, action, amount, playerId) {
-  const raiseAmount = Number(amount || 0);
-
-  if (action === "check") {
-    const options = ["Check.", "Jeg checker.", "Jeg nøjes med at checke."];
-    if (hasPreviousAction(game, "check")) options.push("Jeg checker også.");
-    return randomText(options);
-  }
-
-  if (action === "call") {
-    if (isFinalCallBeforeNewCards(game, playerId)) return finalCallMessage(game);
-
-    const options = ["Jeg caller.", "Jeg er med.", "Jeg vil gerne se."];
-    if (hasPreviousAction(game, "call")) options.push("Jeg caller også.");
-    return randomText(options);
-  }
-
-  if (action === "raise") {
-    const options = [`Jeg raiser til ${raiseAmount}.`, `Jeg forhøjer til ${raiseAmount}.`];
-    if (hasPreviousAction(game, ["raise", "all_in"])) options.push(`Jeg re-raiser til ${raiseAmount}.`);
-    return randomText(options);
-  }
-
-  if (action === "fold") {
-    const options = ["Jeg folder.", "Jeg smider kortene.", "Jeg er ude."];
-    if (hasPreviousAction(game, "fold")) options.push("Jeg er også ude.");
-    return randomText(options);
-  }
-
-  if (action === "all_in") {
-    const options = ["All-in!", "Jeg er all-in!", "Jeg skubber hele stacken ind. All-in!"];
-    if (hasPreviousAction(game, "all_in")) options.push("Jeg er med på all-in. Action time!");
-    return randomText(options);
-  }
-
-  return "";
-}
-
-function hideExpiredMessages(game) {
-  const now = Date.now();
-
-  game.players.forEach((player) => {
-    if (!player.messageAt) return;
-
-    if (now - new Date(player.messageAt).getTime() > 5000) {
-      player.message = "";
-      player.messageAt = null;
-    }
-  });
 }
 
 function createGame({
@@ -214,9 +96,7 @@ function joinGame({ code, playerName }) {
 }
 
 function getGame(code) {
-  const game = games.get(normalizeGameCode(code));
-  if (game) hideExpiredMessages(game);
-  return game;
+  return games.get(normalizeGameCode(code));
 }
 
 function revealedShowdownHoleCards(game) {
@@ -263,15 +143,6 @@ function startGame({ code, playerId }) {
   game.status = "in_progress";
   createFirstHand(game);
 
-  const dealer = game.players.find((item) => item.id === game.hand.dealerPlayerId);
-  const firstPlayer = game.players.find((item) => item.id === game.hand.currentPlayerId);
-  if (dealer) {
-    setEphemeralMessage(
-      dealer,
-      `Jeg vandt lodtrækningen og er dealer i første runde. ${firstPlayer?.name || "Næste spiller"}, du starter.`
-    );
-  }
-
   return game;
 }
 
@@ -306,10 +177,7 @@ function playerAction({ code, playerId, action, amount }) {
   const player = game.players.find((item) => item.id === playerId);
   if (!player) throw new Error("PLAYER_NOT_FOUND");
 
-  const message = actionMessage(game, action, amount, playerId);
-  const updatedGame = applyPlayerAction(game, { playerId, action, amount });
-  if (message) setEphemeralMessage(player, message);
-  return updatedGame;
+  return applyPlayerAction(game, { playerId, action, amount });
 }
 
 function nextHand({ code, playerId }) {
@@ -325,18 +193,6 @@ function nextHand({ code, playerId }) {
   return game;
 }
 
-function setPlayerMessage({ code, playerId, message }) {
-  const game = getGame(code);
-
-  if (!game) throw new Error("GAME_NOT_FOUND");
-
-  const player = game.players.find((item) => item.id === playerId);
-  if (!player) throw new Error("PLAYER_NOT_FOUND");
-
-  setEphemeralMessage(player, sanitizeMessage(message, 50));
-  return game;
-}
-
 module.exports = {
   createGame,
   joinGame,
@@ -346,6 +202,5 @@ module.exports = {
   reorderSeats,
   updateSeats,
   playerAction,
-  nextHand,
-  setPlayerMessage
+  nextHand
 };
