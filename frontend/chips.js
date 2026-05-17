@@ -5,6 +5,8 @@
   const potTarget = { x: 72, y: 42 };
   let lastBetRender = { handNumber: null, collectedPot: 0, bets: [] };
   const awardedAnimationKeys = new Set();
+  let audioContext = null;
+  let audioPrimed = false;
   const visualSlotsByPlayerCount = {
     2: [3, 0],
     3: [3, 5, 1],
@@ -26,6 +28,122 @@
   };
 
   if (typeof originalRenderGame !== "function") return;
+
+  function getAudioContext() {
+    if (audioContext) return audioContext;
+
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return null;
+
+    audioContext = new AudioContextClass();
+    return audioContext;
+  }
+
+  function primeChipAudio() {
+    const context = getAudioContext();
+    if (!context || audioPrimed) return;
+
+    if (context.state === "suspended") {
+      context.resume().catch(() => {});
+    }
+
+    audioPrimed = true;
+  }
+
+  function playChipClick(when, frequency, volume, duration) {
+    const context = getAudioContext();
+    if (!context) return;
+
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    const filter = context.createBiquadFilter();
+
+    oscillator.type = "triangle";
+    oscillator.frequency.setValueAtTime(frequency, when);
+    oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.72, when + duration);
+
+    filter.type = "highpass";
+    filter.frequency.setValueAtTime(420, when);
+
+    gain.gain.setValueAtTime(0.0001, when);
+    gain.gain.exponentialRampToValueAtTime(volume, when + 0.006);
+    gain.gain.exponentialRampToValueAtTime(0.0001, when + duration);
+
+    oscillator.connect(filter);
+    filter.connect(gain);
+    gain.connect(context.destination);
+
+    oscillator.start(when);
+    oscillator.stop(when + duration + 0.01);
+  }
+
+  function playChipNoise(when, volume, duration) {
+    const context = getAudioContext();
+    if (!context) return;
+
+    const bufferSize = Math.max(1, Math.floor(context.sampleRate * duration));
+    const buffer = context.createBuffer(1, bufferSize, context.sampleRate);
+    const data = buffer.getChannelData(0);
+
+    for (let index = 0; index < bufferSize; index += 1) {
+      const progress = index / bufferSize;
+      data[index] = (Math.random() * 2 - 1) * (1 - progress) * 0.36;
+    }
+
+    const source = context.createBufferSource();
+    const filter = context.createBiquadFilter();
+    const gain = context.createGain();
+
+    source.buffer = buffer;
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(2100, when);
+    filter.frequency.exponentialRampToValueAtTime(900, when + duration);
+    filter.Q.setValueAtTime(1.1, when);
+
+    gain.gain.setValueAtTime(0.0001, when);
+    gain.gain.exponentialRampToValueAtTime(volume, when + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, when + duration);
+
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(context.destination);
+    source.start(when);
+    source.stop(when + duration);
+  }
+
+  function playBetChipsSound() {
+    const context = getAudioContext();
+    if (!context) return;
+
+    if (context.state === "suspended") {
+      context.resume().catch(() => {});
+    }
+
+    const now = context.currentTime;
+    playChipNoise(now, 0.07, 0.11);
+    [0, 0.026, 0.052].forEach((offset, index) => {
+      playChipClick(now + offset, 980 - index * 95, 0.032, 0.055);
+    });
+  }
+
+  function playCollectPotSound() {
+    const context = getAudioContext();
+    if (!context) return;
+
+    if (context.state === "suspended") {
+      context.resume().catch(() => {});
+    }
+
+    const now = context.currentTime;
+    playChipNoise(now, 0.095, 0.18);
+    [0, 0.024, 0.048, 0.082, 0.122].forEach((offset, index) => {
+      playChipClick(now + offset, 1180 - index * 110, 0.037, 0.06);
+    });
+  }
+
+  ["pointerdown", "keydown", "touchstart"].forEach((eventName) => {
+    window.addEventListener(eventName, primeChipAudio, { once: true, passive: true });
+  });
 
   function ownPlayerIdFromGame(game) {
     return Object.keys(game.hand?.holeCards || {})[0] || "";
@@ -162,7 +280,7 @@
       const button = document.createElement("button");
       button.type = "button";
       button.className = "chip-button";
-      button.title = `Læg ${value} til raise`;
+      button.title = `L3g ${value} til raise`;
       button.appendChild(makeChip(value));
       button.addEventListener("click", () => {
         setRaiseAmount(Number(raiseInput.value || 0) + value);
@@ -309,6 +427,7 @@
 
     if (awardedAnimationKeys.has(key)) return;
     awardedAnimationKeys.add(key);
+    playCollectPotSound();
 
     [...amounts.entries()].forEach(([playerId, amount], winnerIndex) => {
       const seat = Array.from(document.querySelectorAll(".game-seat")).find((item) => {
@@ -400,6 +519,8 @@
     const potIncreased = potAmount > lastBetRender.collectedPot;
 
     if (!sameHand || !hadVisibleBets || !betsWereCollected || !potIncreased) return;
+
+    playBetChipsSound();
 
     lastBetRender.bets.forEach((snapshot, snapshotIndex) => {
       const ghost = document.createElement("div");
