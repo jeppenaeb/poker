@@ -2,10 +2,41 @@
   const originalRenderGame = window.renderGame;
   if (typeof originalRenderGame !== "function") return;
 
+  const CARD_FLIP_SOUND_URL = "https://pixabay.com/sound-effects/download/522520/";
   let lastHandKey = "";
   let lastCommunityCount = 0;
   let animationId = 0;
   let activeAnimation = null;
+  let flipAudio = null;
+  let flipAudioPrimed = false;
+
+  function getFlipAudio() {
+    if (flipAudio) return flipAudio;
+
+    flipAudio = new Audio(CARD_FLIP_SOUND_URL);
+    flipAudio.preload = "auto";
+    flipAudio.volume = 0.65;
+    return flipAudio;
+  }
+
+  function primeFlipAudio() {
+    if (flipAudioPrimed) return;
+
+    const audio = getFlipAudio();
+    audio.load();
+    flipAudioPrimed = true;
+  }
+
+  function playFlipSound() {
+    const baseAudio = getFlipAudio();
+    const audio = baseAudio.cloneNode(true);
+    audio.volume = baseAudio.volume;
+    audio.play().catch(() => {});
+  }
+
+  ["pointerdown", "keydown", "touchstart"].forEach((eventName) => {
+    window.addEventListener(eventName, primeFlipAudio, { once: true, passive: true });
+  });
 
   function cardLabel(card) {
     if (!card) return "";
@@ -76,6 +107,7 @@
       delay += 500;
       window.setTimeout(() => {
         if (currentAnimationId !== animationId || !activeAnimation) return;
+        playFlipSound();
         htmlParts[fromCount + index] = faceUpCard(card, "card-revealed");
         setCommunityHtml(row, htmlParts);
       }, delay);
