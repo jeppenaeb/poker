@@ -1,0 +1,57 @@
+.seat[data-player-id]:not([data-player-id=""]),
+.game-seat[data-player-id]:not([data-player-id=""]) {
+  border-color: var(--player-color, #475569);
+  box-shadow: inset 5px 0 0 var(--player-color, #475569), 0 8px 18px rgba(0, 0, 0, 0.16);
+}
+
+.game-seat.is-current[data-player-id]:not([data-player-id=""]) {
+  border-color: var(--player-color, #22c55e);
+  box-shadow: inset 5px 0 0 var(--player-color, #22c55e), 0 0 0 3px rgba(34, 197, 94, 0.22);
+}
+
+.game-seat,
+.table-panel,
+.player-dock {
+  overflow: visible;
+}
+
+.table-panel {
+  position: relative;
+}
+
+.screen-header.lobby-header {
+  justify-content: flex-start;
+}
+
+.screen-header.lobby-header > div:first-child {
+  margin-right: auto;
+}
+
+.copy-code-button {
+  width: auto;
+  min-width: 58px;
+  min-height: 36px;
+  border: 1px solid rgba(134, 239, 172, 0.45);
+  border-radius: 10px;
+  background: rgba(20, 83, 45, 0.45);
+  color: #dcfce7;
+  padding: 7px 10px;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  letter-spacing: 0;
+}
+
+.copy-code-button:hover {
+  border-color: #86efac;
+  background: rgba(20, 83, 45, 0.72);
+}
+
+@media (max-width: 560px) {
+  .copy-code-button {
+    min-width: 54px;
+    min-height: 34px;
+    padding: 7px 9px;
+    font-size: 12px;
+  }
+}
